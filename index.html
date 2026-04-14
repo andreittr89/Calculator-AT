@@ -119,6 +119,25 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .login-box .login-btn:active{background:#333;transform:scale(0.98)}
 .login-error{color:#c62828;font-size:12px;margin-top:8px;display:none}
 .login-icon{font-size:36px;margin-bottom:12px}
+.sport-met-row{display:grid;grid-template-columns:1fr auto;gap:6px;padding:8px 0;border-bottom:1px solid #f0ede8;font-size:13px;align-items:center}
+.sport-met-row:last-child{border-bottom:none}
+.sport-met-name{font-weight:500;color:#1a1a1a}
+.sport-met-val{color:#888;text-align:right;font-size:12px}
+.sport-result-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+@media(max-width:420px){.sport-result-grid{grid-template-columns:1fr}}
+.toggle-row{display:flex;align-items:center;gap:10px;margin-top:12px}
+.toggle-switch{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:24px;transition:.2s}
+.toggle-slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.toggle-switch input:checked+.toggle-slider{background:#1a1a1a}
+.toggle-switch input:checked+.toggle-slider:before{transform:translateX(20px)}
+.cycling-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
+.cycling-table th{background:#f5f4f0;padding:8px 6px;text-align:center;font-weight:600;font-size:11px;color:#666;border-bottom:2px solid #e8e6e0}
+.cycling-table td{padding:8px 6px;text-align:center;border-bottom:1px solid #f0ede8}
+.cycling-table .day-high{background:#e6f4ea;color:#2d6a3f;font-weight:600}
+.cycling-table .day-low{background:#fff3e0;color:#b45309;font-weight:600}
+.cycling-table .day-mod{background:#e8f4fd;color:#1a5c8a;font-weight:600}
 </style>
 </head>
 <body>
@@ -138,13 +157,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <!-- APP (hidden until login) -->
 <div class="app" id="main-app" style="display:none">
   <h1>Calculator Nutrițional Clinic</h1>
-  <p class="subtitle">Biometrie · Compoziție corporală · RMB · TDEE · Macronutrienți · Hidratare · Suplimente · Buget</p>
+  <p class="subtitle">Biometrie · Compoziție corporală · RMB · TDEE · Macronutrienți · Hidratare · Suplimente · Sportiv · Buget</p>
 
   <div class="tabs" id="tab-bar">
     <div class="tab active" data-tab="profil" role="button" tabindex="0">Profil</div>
     <div class="tab" data-tab="macro" role="button" tabindex="0">Macro & Micro</div>
     <div class="tab" data-tab="hidro" role="button" tabindex="0">Hidratare</div>
     <div class="tab" data-tab="suplimente" role="button" tabindex="0">Suplimente</div>
+    <div class="tab" data-tab="sportiv" role="button" tabindex="0">Sportiv</div>
     <div class="tab" data-tab="intolerante" role="button" tabindex="0">Intoleranțe</div>
     <div class="tab" data-tab="buget" role="button" tabindex="0">Buget</div>
   </div>
@@ -213,7 +233,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
 
       <div id="bf-viz" style="display:none;margin-top:12px">
-        <p style="font-size:12px;color:#666;margin-bottom:2px">Grăsime corporală (U.S. Navy Method)</p>
+        <p style="font-size:12px;color:#666;margin-bottom:2px">Grăsime corporală (CUN-BAE Formula)</p>
         <div class="bf-bar"><div class="bf-marker" id="bf-marker"></div></div>
         <div class="bf-labels"><span>Esențial</span><span>Atletic</span><span>Fitness</span><span>Mediu</span><span>Obez</span></div>
       </div>
@@ -281,6 +301,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="result-row"><span class="result-label">Grăsimi</span><span class="result-val" id="m-gras">—</span></div>
         <div class="bar-wrap" style="background:#e8916a"></div>
         <div id="macro-nota" class="info-box"></div>
+
+        <!-- CALORIE CYCLING -->
+        <div style="margin-top:16px;padding-top:12px;border-top:2px solid #e8e6e0">
+          <div class="toggle-row">
+            <label class="toggle-switch" style="margin:0"><input type="checkbox" id="cycling-toggle"><span class="toggle-slider"></span></label>
+            <span style="font-size:14px;font-weight:500">Calorie Cycling (distribuție săptămânală)</span>
+          </div>
+          <p class="note" style="margin-top:4px">Alternează zile cu aport caloric mai mare (zile de antrenament) și mai mic (zile de odihnă), păstrând media săptămânală identică.</p>
+          <div id="cycling-content" style="display:none;margin-top:12px">
+            <div id="cycling-table-wrap"></div>
+            <div id="cycling-nota" class="info-box" style="margin-top:8px"></div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="card">
@@ -324,6 +357,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="sup-card">
         <div class="sup-header" data-sup="vit-d"><div><div class="sup-title">Vitamina D3 + K2</div><div class="sup-desc">1000–4000 UI D3 + 100 µg K2 MK-7 / zi</div></div><span class="badge badge-ok">Esențial</span></div>
         <div class="sup-detail" id="sup-vit-d">
+          <div class="detail-row"><span class="detail-icon">🔬</span><span class="detail-text"><strong>Mecanism:</strong> D3 reglează absorbția calciului; K2 dirijează calciul spre oase (nu artere). Sinergie esențială</span></div>
           <div class="detail-row"><span class="detail-icon">🕐</span><span class="detail-text"><strong>Când:</strong> dimineața sau la prânz, cu masă ce conține grăsimi (liposolubilă)</span></div>
           <div class="detail-row"><span class="detail-icon">✅</span><span class="detail-text"><strong>Se combină bine cu:</strong> magneziu, omega-3, zinc</span></div>
           <div class="detail-row"><span class="detail-icon">⚠️</span><span class="detail-text detail-warn"><strong>Nu se ia cu:</strong> calciu în doze mari simultan; nu seara (poate stimula energia)</span></div>
@@ -422,6 +456,230 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
   </div>
 
+  <!-- SPORTIV DE PERFORMANȚĂ -->
+  <div class="section" id="tab-sportiv">
+    <div class="card">
+      <p class="section-title">Calculator MET — Consum energetic pe activitate</p>
+      <p class="note" style="margin-bottom:12px">Selectează activitatea, introdu durata și greutatea. Formula exactă: <strong>Calorii/oră = MET × RMB / 24</strong></p>
+      <div id="sport-nedisponibil" style="color:#888;font-size:14px;display:none">Calculează mai întâi profilul din tab-ul Profil pentru RMB personalizat.</div>
+      <div id="sport-calc-form">
+        <label>Activitate fizică</label>
+        <select id="sport-activitate">
+          <option value="4.5">Abdomene (4.5 MET)</option>
+          <option value="6.5">Aerobic (6.5 MET)</option>
+          <option value="9">Alergare ușoară (9 MET)</option>
+          <option value="12">Alergat pe loc (12 MET)</option>
+          <option value="15">Alergat pe scări (15 MET)</option>
+          <option value="18">Sprint (18 MET)</option>
+          <option value="7">Aparat de vâslit – efort moderat (7 MET)</option>
+          <option value="7">Badminton (7 MET)</option>
+          <option value="8">Baschet (8 MET)</option>
+          <option value="4.5">Baschet – dat la coș (4.5 MET)</option>
+          <option value="8">Bicicletă – efort moderat (8 MET)</option>
+          <option value="7">Bicicletă eliptică / staționară (7 MET)</option>
+          <option value="2.5">Biliard (2.5 MET)</option>
+          <option value="12">Box – în ring (12 MET)</option>
+          <option value="6">Box – sac (6 MET)</option>
+          <option value="6.5">Cardio – clasă medie fitness (6.5 MET)</option>
+          <option value="8">Cățărat (8 MET)</option>
+          <option value="10">Ciclism – viteză mare (10 MET)</option>
+          <option value="3">Coborât scări (3 MET)</option>
+          <option value="3">Dans (3 MET)</option>
+          <option value="8">Exerciții calistenice intense (8 MET)</option>
+          <option value="4" selected>Fitness – efort ușor/moderat (4 MET)</option>
+          <option value="9">Fotbal – competitiv (9 MET)</option>
+          <option value="3">Frisbee (3 MET)</option>
+          <option value="4">Gimnastică (4 MET)</option>
+          <option value="4">Grădinărit (4 MET)</option>
+          <option value="8">Handbal (8 MET)</option>
+          <option value="7">Înot – ture bazin, efort moderat (7 MET)</option>
+          <option value="6.5">Kangoo (6.5 MET)</option>
+          <option value="6.5">Kickboxing (6.5 MET)</option>
+          <option value="2.5">Mers pe jos – plimbare (2.5 MET)</option>
+          <option value="3">Mers pe role (3 MET)</option>
+          <option value="6.5">Mers rapid – stil marș (6.5 MET)</option>
+          <option value="7">Patinaj (7 MET)</option>
+          <option value="6">Sală – culturism (6 MET)</option>
+          <option value="5">Săpat (5 MET)</option>
+          <option value="10">Sărit coardă – ritm mediu (10 MET)</option>
+          <option value="1">Saună (1 MET)</option>
+          <option value="6">Schi / ski (6 MET)</option>
+          <option value="2">Stand în picioare (2 MET)</option>
+          <option value="8.5">Step aerobic (8.5 MET)</option>
+          <option value="4">Stepper (4 MET)</option>
+          <option value="4">Tenis de masă / ping pong (4 MET)</option>
+          <option value="7">Tenis (7 MET)</option>
+          <option value="5">Tenis la dublu (5 MET)</option>
+          <option value="3.5">Trambulină (3.5 MET)</option>
+          <option value="6">TRX (6 MET)</option>
+          <option value="8">Urcat scări (8 MET)</option>
+          <option value="4">Volei (4 MET)</option>
+          <option value="2.5">Yoga (2.5 MET)</option>
+          <option value="4.5">Zumba (4.5 MET)</option>
+        </select>
+        <div class="row">
+          <div><label>Durată (minute)</label><input type="number" id="sport-durata" value="60" min="5" max="480"></div>
+          <div><label>MET personalizat</label><input type="number" id="sport-met-custom" placeholder="opțional" step="0.5" min="1" max="23"></div>
+        </div>
+        <div class="calc-btn" id="btn-sport-calc" role="button" tabindex="0">Calculează consumul energetic →</div>
+      </div>
+      <div id="sport-result" style="display:none;margin-top:16px">
+        <div class="sport-result-grid">
+          <div class="metric"><div class="metric-label">Calorii arse</div><div class="metric-val" id="sp-calorii">—</div><div class="metric-unit">kcal</div></div>
+          <div class="metric"><div class="metric-label">Calorii / oră</div><div class="metric-val" id="sp-cal-ora">—</div><div class="metric-unit">kcal/h</div></div>
+          <div class="metric"><div class="metric-label">MET folosit</div><div class="metric-val" id="sp-met">—</div><div class="metric-unit">MET</div></div>
+          <div class="metric"><div class="metric-label">1 MET personal</div><div class="metric-val" id="sp-1met">—</div><div class="metric-unit">kcal/h</div></div>
+        </div>
+        <div id="sp-formula" class="info-box" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <!-- PROTOCOALE NUTRIȚIONALE SPORTIVE -->
+    <div class="card">
+      <p class="section-title">Protocoale nutriționale sportive</p>
+
+      <div class="collapse-header" id="toggle-pre-sport">
+        <span class="collapse-arrow" id="arr-pre-sport">▶</span>
+        <span style="font-size:14px;font-weight:500">Pre-antrenament (2–3h înainte)</span>
+      </div>
+      <div class="collapse-body" id="body-pre-sport">
+        <div class="result-row"><span class="result-label">Compoziție masă</span><span class="result-val">2/3 carbohidrați complecși + 1/3 proteine ușoare</span></div>
+        <div class="result-row"><span class="result-label">Carbohidrați</span><span class="result-val">1–4 g/kg corp</span></div>
+        <div class="result-row"><span class="result-label">Exemple</span><span class="result-val">Ovăz + banană + ou, orez brun + pui, paste integrale + curcan</span></div>
+        <div class="result-row"><span class="result-label">Hidratare</span><span class="result-val">500 ml apă cu 2h înainte</span></div>
+        <div class="info-box">Combinarea proteinelor ușoare cu carbohidrații complecși asigură energie sustenabilă pe parcursul efortului.</div>
+      </div>
+
+      <div class="collapse-header" id="toggle-intra-sport">
+        <span class="collapse-arrow" id="arr-intra-sport">▶</span>
+        <span style="font-size:14px;font-weight:500">Intra-antrenament (în timpul efortului)</span>
+      </div>
+      <div class="collapse-body" id="body-intra-sport">
+        <div class="result-row"><span class="result-label">Efort &lt;60 min</span><span class="result-val">Apă simplă (150–250 ml la 15–20 min)</span></div>
+        <div class="result-row"><span class="result-label">Efort 60–150 min</span><span class="result-val">30–60 g carbohidrați/oră (băuturi izotonice)</span></div>
+        <div class="result-row"><span class="result-label">Efort &gt;150 min</span><span class="result-val">Până la 90 g carbohidrați/oră + electroliți + aminoacizi</span></div>
+        <div class="result-row"><span class="result-label">Soluție rehidratare</span><span class="result-val">6% glucoză + minerale + aminoacizi</span></div>
+        <div class="warn-box">Pierderea a doar 2% din fluidele corpului scade capacitatea aerobă cu 10–15%. Setea NU este un indicator fiabil — hidratarea se face preventiv.</div>
+      </div>
+
+      <div class="collapse-header" id="toggle-post-sport">
+        <span class="collapse-arrow" id="arr-post-sport">▶</span>
+        <span style="font-size:14px;font-weight:500">Post-efort (recuperare)</span>
+      </div>
+      <div class="collapse-body" id="body-post-sport">
+        <div class="result-row"><span class="result-label">Primele 15 min</span><span class="result-val">Suc de fructe cu miere sau băutură izotonică</span></div>
+        <div class="result-row"><span class="result-label">Masă carbohidrați (max 1h)</span><span class="result-val">1–4 g carbohidrați/kg corp, ușor digerabilă</span></div>
+        <div class="result-row"><span class="result-label">Masă proteine (la 1h după carb)</span><span class="result-val">0.35 g proteine/kg corp, proteină complexă</span></div>
+        <div class="result-row"><span class="result-label">Raport carbohidrați:proteine</span><span class="result-val">4:1 (refacere optimă glicogen)</span></div>
+        <div class="result-row"><span class="result-label">Rehidratare</span><span class="result-val">1.5 L per kg pierdut în antrenament (min 500 ml)</span></div>
+        <div class="result-row"><span class="result-label">Masă caseină (pre-somn)</span><span class="result-val">30 g caseină — refacere miofibrilară nocturnă (Snijders et al. 2015)</span></div>
+        <div class="info-box">Post-efort: carbohidrați pentru refacerea glicogenului, proteine pentru repararea leziunilor tisulare, radicali alcalini pentru combaterea acidozei induse de efort.</div>
+      </div>
+    </div>
+
+    <!-- MACRONUTRIENȚI SPORTIVI -->
+    <div class="card">
+      <p class="section-title">Macronutrienți sportivi — ghid pe tip de efort</p>
+      <div id="sport-macro-nedisponibil" style="color:#888;font-size:14px">Calculează mai întâi profilul din tab-ul Profil.</div>
+      <div id="sport-macro-content" style="display:none">
+        <div class="result-row"><span class="result-label">Proteine (aerob/intervale)</span><span class="result-val" id="sm-prot-aero">—</span></div>
+        <div class="result-row"><span class="result-label">Proteine (anaerob/forță)</span><span class="result-val" id="sm-prot-ana">—</span></div>
+        <div class="result-row"><span class="result-label">Carbohidrați (intensitate scăzută)</span><span class="result-val" id="sm-carb-low">—</span></div>
+        <div class="result-row"><span class="result-label">Carbohidrați (intensitate medie)</span><span class="result-val" id="sm-carb-med">—</span></div>
+        <div class="result-row"><span class="result-label">Carbohidrați (intensitate mare)</span><span class="result-val" id="sm-carb-high">—</span></div>
+        <div class="result-row"><span class="result-label">Proteine dozare/masă (max)</span><span class="result-val" id="sm-prot-meal">—</span></div>
+        <div class="result-row"><span class="result-label">Proteine post-antrenament</span><span class="result-val" id="sm-prot-post">—</span></div>
+        <div class="note">Proteine: interval 2–3h între mese proteice. Prima masă post-antrenament poate fi mai mare (0.35 g/kg). Seara: 30g caseină.</div>
+      </div>
+    </div>
+
+    <!-- SUPLIMENTE SPORTIVE -->
+    <div class="card">
+      <p class="section-title">Suplimente sportive personalizate</p>
+      <div id="sport-sup-nedisponibil" style="color:#888;font-size:14px">Calculează mai întâi profilul din tab-ul Profil.</div>
+      <div id="sport-sup-content" style="display:none">
+        <div class="sup-card">
+          <div class="sup-header" data-sup="sp-creatina"><div><div class="sup-title">Creatină monohidrată</div><div class="sup-desc" id="sp-creatina-dose">5–10 g/zi</div></div><span class="badge badge-ok">Recomandat</span></div>
+          <div class="sup-detail" id="sup-sp-creatina">
+            <div class="detail-row"><span class="detail-icon">💪</span><span class="detail-text"><strong>Forță:</strong> 5 g/zi. <strong>Masă musculară:</strong> 10 g/zi (2×5g). Nu depăși 10 g/zi. Efecte: crește forța, rezistența și refacerea ATP</span></div>
+            <div class="detail-row"><span class="detail-icon">⚠️</span><span class="detail-text detail-warn">Poate cauza retenție de apă inițială. Hidratare crescută obligatorie. Dacă apar crampe — crește apa, nu doza</span></div>
+          </div>
+        </div>
+        <div class="sup-card">
+          <div class="sup-header" data-sup="sp-nitrati"><div><div class="sup-title">Nitrați (suc de sfeclă)</div><div class="sup-desc" id="sp-nitrati-dose">—</div></div><span class="badge badge-ok">Recomandat</span></div>
+          <div class="sup-detail" id="sup-sp-nitrati">
+            <div class="detail-row"><span class="detail-icon">🥤</span><span class="detail-text"><strong>Doză:</strong> <span id="sp-nitrati-detail">—</span></span></div>
+            <div class="detail-row"><span class="detail-icon">🕐</span><span class="detail-text"><strong>Când:</strong> 280 ml suc de sfeclă cu 2–3h înainte de antrenament. Crește rezistența, circulația, concentrarea</span></div>
+            <div class="detail-row"><span class="detail-icon">🥬</span><span class="detail-text"><strong>Alternative alimentare:</strong> spanac (236 mg/100g), rubarbă (200 mg/100g), sfeclă (199 mg/100g), kale (137 mg/100g)</span></div>
+          </div>
+        </div>
+        <div class="sup-card">
+          <div class="sup-header" data-sup="sp-cafeina"><div><div class="sup-title">Cafeină</div><div class="sup-desc">100–600 mg înainte de antrenament</div></div><span class="badge badge-warn">Contextual</span></div>
+          <div class="sup-detail" id="sup-sp-cafeina">
+            <div class="detail-row"><span class="detail-icon">☕</span><span class="detail-text"><strong>Aerob:</strong> 100–200 mg. <strong>Anaerob:</strong> 400–600 mg. Max 400 mg/zi din toate sursele</span></div>
+            <div class="detail-row"><span class="detail-icon">⚠️</span><span class="detail-text detail-warn">Nu pe stomacul gol. Nu după ora 14:00. Poate deregla somnul</span></div>
+          </div>
+        </div>
+        <div class="sup-card">
+          <div class="sup-header" data-sup="sp-betaalanina"><div><div class="sup-title">Beta-alanină</div><div class="sup-desc">4–6 g/zi — poate crește rezistența</div></div><span class="badge badge-warn">Contextual</span></div>
+          <div class="sup-detail" id="sup-sp-betaalanina">
+            <div class="detail-row"><span class="detail-icon">🔬</span><span class="detail-text">Se leagă cu histidina → carnosină. Proprietăți anti-oxidante, blochează producerea de acid lactic. Dovezi încă incomplete dar promițătoare</span></div>
+          </div>
+        </div>
+        <div class="sup-card">
+          <div class="sup-header" data-sup="sp-vitd"><div><div class="sup-title">Vitamina D3</div><div class="sup-desc">2000–3000 UI/zi (50–75 mcg) cu masă grasă</div></div><span class="badge badge-ok">Recomandat</span></div>
+          <div class="sup-detail" id="sup-sp-vitd">
+            <div class="detail-row"><span class="detail-icon">☀️</span><span class="detail-text">Rol în producerea hormonilor steroizi. Studii: nivel ridicat de testosteron menținut chiar și după 1 an de suplimentare. Ideal: ulei de pește îmbogățit cu D3</span></div>
+          </div>
+        </div>
+        <div class="sup-card">
+          <div class="sup-header" data-sup="sp-zinc"><div><div class="sup-title">Zinc (sportivi)</div><div class="sup-desc" id="sp-zinc-dose">25–30 mg/zi</div></div><span class="badge badge-warn">Contextual</span></div>
+          <div class="sup-detail" id="sup-sp-zinc">
+            <div class="detail-row"><span class="detail-icon">💧</span><span class="detail-text">Se pierde prin transpirație (sodiu, potasiu, calciu, magneziu, clor, zinc). Sportivii au nevoie crescută: 25–30 mg/zi. Vegetarienii: 25 mg/zi minim</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RAȚII SPECIALE -->
+    <div class="card">
+      <p class="section-title">Rații alimentare speciale</p>
+      <div class="collapse-header" id="toggle-ratia-hg">
+        <span class="collapse-arrow" id="arr-ratia-hg">▶</span>
+        <span style="font-size:14px;font-weight:500">Rația hiperglucidică (sporturi anduranță)</span>
+      </div>
+      <div class="collapse-body" id="body-ratia-hg">
+        <div class="result-row"><span class="result-label">Indicații</span><span class="result-val">Sporturi de anduranță lungă</span></div>
+        <div class="result-row"><span class="result-label">Durată</span><span class="result-val">1 săptămână înainte de competiție</span></div>
+        <div class="result-row"><span class="result-label">Primele 3 zile</span><span class="result-val">Antrenamente intense + glucide &lt;50%</span></div>
+        <div class="result-row"><span class="result-label">Ultimele 3 zile</span><span class="result-val">Intensitate scăzută + glucide 65%</span></div>
+        <div class="result-row"><span class="result-label">Rezultat</span><span class="result-val">Glicogen muscular ×2.2 (N=2.3g/100g țesut)</span></div>
+      </div>
+
+      <div class="collapse-header" id="toggle-ratia-hp">
+        <span class="collapse-arrow" id="arr-ratia-hp">▶</span>
+        <span style="font-size:14px;font-weight:500">Rația hiperproteică (sporturi de forță)</span>
+      </div>
+      <div class="collapse-body" id="body-ratia-hp">
+        <div class="result-row"><span class="result-label">Indicații</span><span class="result-val">Sporturi de forță și masă musculară</span></div>
+        <div class="result-row"><span class="result-label">Durată</span><span class="result-val">8 săptămâni înainte de competiție</span></div>
+        <div class="result-row"><span class="result-label">Proteine</span><span class="result-val">Până la 3 g/kg corp/zi + antrenament 4–5h/zi</span></div>
+        <div class="result-row"><span class="result-label">Rezultat</span><span class="result-val">+2–3 kg masă activă cu scăderea țesutului adipos</span></div>
+      </div>
+
+      <div class="collapse-header" id="toggle-ratia-concurs">
+        <span class="collapse-arrow" id="arr-ratia-concurs">▶</span>
+        <span style="font-size:14px;font-weight:500">Rația de concurs</span>
+      </div>
+      <div class="collapse-body" id="body-ratia-concurs">
+        <div class="result-row"><span class="result-label">Rația de așteptare</span><span class="result-val">100 ml suc de fructe cu miere / oră, în orele pre-competiție</span></div>
+        <div class="result-row"><span class="result-label">Pe parcursul concursului</span><span class="result-val">Lichide îndulcite + vitamine, minerale, aminoacizi + mici cantități de proteine</span></div>
+        <div class="result-row"><span class="result-label">Condiții</span><span class="result-val">Evacuare gastrică rapidă (2–3h), fără flatulență/dispepsie</span></div>
+        <div class="info-box">Rația de concurs este psihologică, nu energogenă. Energia vine din rezervele încărcate anterior.</div>
+      </div>
+    </div>
+  </div>
+
   <!-- INTOLERANTE -->
   <div class="section" id="tab-intolerante">
     <div class="card">
@@ -489,10 +747,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div class="food-item"><div><div class="food-name">Macrou congelat</div><div class="food-detail">Omega-3 ridicat, vitamina D, B12</div><div class="food-brands">Pescador, Nixe (Lidl), K-Classic (Kaufland)</div></div><div><div class="food-price">~12–16 RON/kg</div><div class="food-where">Lidl, Kaufland, Metro</div></div></div>
           <div class="food-item"><div><div class="food-name">Somon congelat (fileuri)</div><div class="food-detail">EPA+DHA ridicat, astaxantină</div><div class="food-brands">Norwegian salmon Lidl, Kaufland, Carrefour</div></div><div><div class="food-price">~35–50 RON/kg</div><div class="food-where">Lidl, Kaufland, Carrefour</div></div></div>
           <div class="food-item"><div><div class="food-name">Cod congelat (fileuri)</div><div class="food-detail">Pește alb slab, proteină pură, ușor de digerat</div><div class="food-brands">Pescador, K-Classic Kaufland, Carrefour</div></div><div><div class="food-price">~20–28 RON/kg</div><div class="food-where">Kaufland, Carrefour, Metro</div></div></div>
-          <div class="food-item"><div><div class="food-name">Doradă congelată</div><div class="food-detail">Proteină slabă, omega-3 moderat, seleniu, fosfor. Aromă delicată, ușor de preparat la cuptor</div><div class="food-brands">Carrefour, Kaufland, Metro</div></div><div><div class="food-price">~25–35 RON/kg</div><div class="food-where">Carrefour, Kaufland, Metro</div></div></div>
+          <div class="food-item"><div><div class="food-name">Doradă congelată</div><div class="food-detail">Proteină slabă, omega-3 moderat, seleniu, fosfor</div><div class="food-brands">Carrefour, Kaufland, Metro</div></div><div><div class="food-price">~25–35 RON/kg</div><div class="food-where">Carrefour, Kaufland, Metro</div></div></div>
           <div class="food-item"><div><div class="food-name">Biban de mare congelat</div><div class="food-detail">Proteină slabă, seleniu, fosfor</div><div class="food-brands">Carrefour, Kaufland</div></div><div><div class="food-price">~22–30 RON/kg</div><div class="food-where">Kaufland, Carrefour</div></div></div>
+          <div class="subcat">Fructe de mare</div>
+          <div class="food-item"><div><div class="food-name">Creveți decorticați (congelat)</div><div class="food-detail">Proteină pură 20g/100g, seleniu, iod, zinc, B12. Foarte slabi</div><div class="food-brands">Pescador, Nixe (Lidl), K-Classic (Kaufland)</div></div><div><div class="food-price">~25–40 RON/400g</div><div class="food-where">Lidl, Kaufland, Metro</div></div></div>
+          <div class="food-item"><div><div class="food-name">Midii (congelat / conservă)</div><div class="food-detail">Fier, B12, zinc, seleniu, omega-3. Bogat în minerale</div><div class="food-brands">Nixe (Lidl), K-Classic (Kaufland), Metro</div></div><div><div class="food-price">~15–25 RON/400g</div><div class="food-where">Lidl, Kaufland, Metro</div></div></div>
+          <div class="food-item"><div><div class="food-name">Calamar (congelat)</div><div class="food-detail">Proteină slabă 15g/100g, seleniu, B12</div><div class="food-brands">Pescador, K-Classic (Kaufland)</div></div><div><div class="food-price">~18–28 RON/400g</div><div class="food-where">Kaufland, Metro</div></div></div>
           <div class="subcat">Conserve de pește</div>
-          <div class="food-item"><div><div class="food-name">Sardine conservă</div><div class="food-detail">Omega-3, calciu (cu oase), B12. Preferabil în suc propriu; dacă în ulei — se scurge</div><div class="food-brands">Rio Mare, Nixe (Lidl), K-Classic (Kaufland), Spar</div></div><div><div class="food-price">~5–8 RON/150g</div><div class="food-where">Oriunde</div></div></div>
+          <div class="food-item"><div><div class="food-name">Sardine conservă</div><div class="food-detail">Omega-3, calciu (cu oase), B12. Preferabil în suc propriu</div><div class="food-brands">Rio Mare, Nixe (Lidl), K-Classic (Kaufland), Spar</div></div><div><div class="food-price">~5–8 RON/150g</div><div class="food-where">Oriunde</div></div></div>
           <div class="food-item"><div><div class="food-name">Hering conservă</div><div class="food-detail">Omega-3 foarte ridicat, vitamina D. Preferabil în suc propriu</div><div class="food-brands">Nixe (Lidl), K-Classic (Kaufland), Meridian, Ocean Sea</div></div><div><div class="food-price">~6–9 RON/200g</div><div class="food-where">Kaufland, Lidl, Mega Image</div></div></div>
           <div class="food-item"><div><div class="food-name">Macrou conservă</div><div class="food-detail">EPA+DHA ridicat, satietate bună. Preferabil în suc propriu</div><div class="food-brands">Rio Mare, Nixe (Lidl), K-Classic (Kaufland)</div></div><div><div class="food-price">~7–10 RON/200g</div><div class="food-where">Kaufland, Carrefour, Mega Image</div></div></div>
           <div class="food-item"><div><div class="food-name">Somon conservă</div><div class="food-detail">Omega-3, astaxantină, calciu</div><div class="food-brands">John West, Rio Mare, Carrefour</div></div><div><div class="food-price">~12–18 RON/200g</div><div class="food-where">Carrefour, Mega Image</div></div></div>
@@ -531,6 +793,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div class="food-item"><div><div class="food-name">Linte roșie / verde</div><div class="food-detail">25g prot/100g uscat, fier, fibre</div><div class="food-brands">Branduri proprii Kaufland, Carrefour; Driedfruits online</div></div><div><div class="food-price">~5–7 RON/500g</div><div class="food-where">Mega Image, Kaufland</div></div></div>
           <div class="food-item"><div><div class="food-name">Năut (conservă / uscat)</div><div class="food-detail">Proteină + fibre + magneziu + folat</div><div class="food-brands">Bonduelle, La Fiesta, Lidl, K-Classic (Kaufland)</div></div><div><div class="food-price">~5–7 RON/400g</div><div class="food-where">Lidl, Kaufland, Carrefour</div></div></div>
           <div class="food-item"><div><div class="food-name">Fasole albă / roșie (conservă)</div><div class="food-detail">Fibre solubile, fier, potasiu</div><div class="food-brands">Bonduelle, La Fiesta, K-Classic (Kaufland), Lidl</div></div><div><div class="food-price">~4–6 RON/400g</div><div class="food-where">Oriunde</div></div></div>
+          <div class="food-item"><div><div class="food-name">Bob (conservă / uscat)</div><div class="food-detail">26g prot/100g uscat, fier, fibre, folat. Tradițional românesc</div><div class="food-brands">Bonduelle, piețe, Kaufland</div></div><div><div class="food-price">~5–8 RON/500g</div><div class="food-where">Piețe, Kaufland</div></div></div>
+          <div class="food-item"><div><div class="food-name">Fasole mung (uscat)</div><div class="food-detail">24g prot/100g uscat, ușor digerabilă, folat, fier, magneziu</div><div class="food-brands">Driedfruits, Kaufland bio, online</div></div><div><div class="food-price">~8–12 RON/500g</div><div class="food-where">Kaufland, online</div></div></div>
           <div class="food-item"><div><div class="food-name">Mazăre (conservă / congelată)</div><div class="food-detail">6g prot/100g, vitamina K, tiamină</div><div class="food-brands">Bonduelle, Hortex, Edenia, Freshona (Lidl), K-Classic (Kaufland)</div></div><div><div class="food-price">~4–6 RON/400g</div><div class="food-where">Lidl, Kaufland, Penny</div></div></div>
           <div class="food-item"><div><div class="food-name">Edamame (congelată)</div><div class="food-detail">11g prot/100g gătit, proteină completă, izoflavone</div><div class="food-brands">Kaufland, Carrefour, online</div></div><div><div class="food-price">~12–16 RON/500g</div><div class="food-where">Kaufland, Carrefour</div></div></div>
           <div class="subcat">Soia & derivate</div>
@@ -543,6 +807,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
       </div>
       <div class="cat-block">
+        <div class="cat-header" data-cat="ciuperci"><span class="cat-icon">🍄</span><span class="cat-title">Ciuperci</span><span class="cat-arrow" id="arr-ciuperci">▶</span></div>
+        <div class="cat-body" id="cat-ciuperci">
+          <div class="food-item"><div><div class="food-name">Ciuperci Champignon (proaspete)</div><div class="food-detail">3g prot/100g, vitamina D (expuse UV), seleniu, potasiu, fibre</div><div class="food-brands">Kaufland, Lidl, Carrefour, piețe</div></div><div><div class="food-price">~6–9 RON/400g</div><div class="food-where">Oriunde</div></div></div>
+          <div class="food-item"><div><div class="food-name">Ciuperci Shiitake (uscate / proaspete)</div><div class="food-detail">Lentinan (imunostimulator), eritadenină, vitamina D, B5</div><div class="food-brands">Kaufland, Mega Image, online</div></div><div><div class="food-price">~15–25 RON/100g uscat</div><div class="food-where">Kaufland, Mega Image</div></div></div>
+          <div class="food-item"><div><div class="food-name">Ciuperci Pleurotus (proaspete)</div><div class="food-detail">Proteină bună, lovastatină naturală, antioxidanți, fibre beta-glucan</div><div class="food-brands">Piețe, Kaufland, Lidl</div></div><div><div class="food-price">~8–12 RON/400g</div><div class="food-where">Piețe, Kaufland</div></div></div>
+        </div>
+      </div>
+      <div class="cat-block">
         <div class="cat-header" data-cat="grasimi"><span class="cat-icon">🥑</span><span class="cat-title">Grăsimi sănătoase</span><span class="cat-arrow" id="arr-grasimi">▶</span></div>
         <div class="cat-body" id="cat-grasimi">
           <div class="subcat">Uleiuri</div>
@@ -551,20 +823,48 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div class="subcat">Nuci & semințe</div>
           <div class="food-item"><div><div class="food-name">Nuci (miez)</div><div class="food-detail">ALA omega-3, polifenoli, magneziu. 7 nuci/zi = doza optimă</div><div class="food-brands">Piețe locale, Driedfruits, Kaufland vrac</div></div><div><div class="food-price">~30–40 RON/500g</div><div class="food-where">Lidl, Kaufland, piețe</div></div></div>
           <div class="food-item"><div><div class="food-name">Migdale crude</div><div class="food-detail">Vitamina E, magneziu, calciu, fibre</div><div class="food-brands">Driedfruits, Kaufland, Lidl (sezonal)</div></div><div><div class="food-price">~35–45 RON/500g</div><div class="food-where">Lidl, Kaufland, online</div></div></div>
-          <div class="food-item"><div><div class="food-name">Semințe de floarea soarelui (crude, nesărate)</div><div class="food-detail">Vitamina E ridicată, magneziu, seleniu, acizi grași polinesaturați</div><div class="food-brands">Driedfruits, Kaufland vrac, Lidl, piețe</div></div><div><div class="food-price">~5–8 RON/500g</div><div class="food-where">Oriunde</div></div></div>
+          <div class="food-item"><div><div class="food-name">Semințe de floarea soarelui (crude, nesărate)</div><div class="food-detail">Vitamina E ridicată, magneziu, seleniu</div><div class="food-brands">Driedfruits, Kaufland vrac, Lidl, piețe</div></div><div><div class="food-price">~5–8 RON/500g</div><div class="food-where">Oriunde</div></div></div>
           <div class="food-item"><div><div class="food-name">Semințe de chia</div><div class="food-detail">ALA omega-3, calciu, fibre solubile, gel hidrofil (satietate)</div><div class="food-brands">Kaufland, Carrefour, Mega Image, Driedfruits</div></div><div><div class="food-price">~15–22 RON/300g</div><div class="food-where">Kaufland, Carrefour</div></div></div>
           <div class="food-item"><div><div class="food-name">Semințe de in (măcinate)</div><div class="food-detail">ALA omega-3, lignani, fibre solubile. Se macină proaspăt</div><div class="food-brands">Solaris, Driedfruits, Kaufland</div></div><div><div class="food-price">~10–15 RON/500g</div><div class="food-where">Kaufland, Plafar</div></div></div>
           <div class="subcat">Alte surse</div>
           <div class="food-item"><div><div class="food-name">Avocado</div><div class="food-detail">Grăsimi mononesaturate, potasiu, folat, fibre</div><div class="food-brands">Disponibil la toate rețelele mari</div></div><div><div class="food-price">~5–9 RON/buc</div><div class="food-where">Lidl, Kaufland, Carrefour</div></div></div>
-          <div class="food-item"><div><div class="food-name">Măsline (negre / verzi, în saramură)</div><div class="food-detail">Grăsimi mononesaturate, vitamina E, polifenoli. Max 10–15 buc/porție (sodiu ridicat)</div><div class="food-brands">Bonduelle, Dacia Plant, La Fiesta, branduri proprii retail</div></div><div><div class="food-price">~8–14 RON/300g</div><div class="food-where">Oriunde</div></div></div>
+          <div class="food-item"><div><div class="food-name">Măsline (negre / verzi, în saramură)</div><div class="food-detail">Grăsimi mononesaturate, vitamina E, polifenoli. Max 10–15 buc/porție</div><div class="food-brands">Bonduelle, Dacia Plant, La Fiesta, branduri proprii retail</div></div><div><div class="food-price">~8–14 RON/300g</div><div class="food-where">Oriunde</div></div></div>
           <div class="food-item"><div><div class="food-name">Pește gras (macrou, somon, hering, sardine)</div><div class="food-detail">EPA+DHA omega-3, vitamina D, B12 — cea mai biodisponibilă sursă</div><div class="food-brands">Vezi categoria Pește</div></div><div><div class="food-price">—</div><div class="food-where">Vezi Pește</div></div></div>
           <div class="food-item"><div><div class="food-name">Ciocolată neagră (min. 80% cacao)</div><div class="food-detail">Flavanoli, magneziu, fier, zinc, antioxidanți. Porție: 20–30g/zi</div><div class="food-brands">Lindt 85%/90%, Moser Roth 85% (Lidl), Kaufland, Carrefour</div></div><div><div class="food-price">~10–20 RON/100g</div><div class="food-where">Lidl, Kaufland, Carrefour</div></div></div>
         </div>
       </div>
       <div class="cat-block">
+        <div class="cat-header" data-cat="fructe-proaspete"><span class="cat-icon">🍎</span><span class="cat-title">Fructe proaspete</span><span class="cat-arrow" id="arr-fructe-proaspete">▶</span></div>
+        <div class="cat-body" id="cat-fructe-proaspete">
+          <div class="food-item"><div><div class="food-name">Mere (sezoniere)</div><div class="food-detail">Fibre (pectină), quercetină, vitamina C. IG scăzut</div><div class="food-brands">Piețe, Kaufland, Lidl</div></div><div><div class="food-price">~3–6 RON/kg</div><div class="food-where">Piețe, oriunde</div></div></div>
+          <div class="food-item"><div><div class="food-name">Afine proaspete / congelate</div><div class="food-detail">Antocianine, vitamina C, K, fibre. Top antioxidanți</div><div class="food-brands">Sezoniere piețe; congelat Bonduelle, Hortex</div></div><div><div class="food-price">~15–25 RON/250g</div><div class="food-where">Piețe, Lidl, Kaufland</div></div></div>
+          <div class="food-item"><div><div class="food-name">Portocale / grapefruit</div><div class="food-detail">Vitamina C, hesperidină, fibre, folat</div><div class="food-brands">Piețe, toate rețelele</div></div><div><div class="food-price">~4–7 RON/kg</div><div class="food-where">Oriunde</div></div></div>
+          <div class="food-item"><div><div class="food-name">Kiwi</div><div class="food-detail">Vitamina C (2x mai mult decât portocala), actinidină (digestie proteine), fibre</div><div class="food-brands">Piețe, toate rețelele</div></div><div><div class="food-price">~8–14 RON/kg</div><div class="food-where">Lidl, Kaufland</div></div></div>
+          <div class="food-item"><div><div class="food-name">Banane</div><div class="food-detail">Potasiu, B6, magneziu. Ideale pre/post-antrenament</div><div class="food-brands">Disponibile oriunde</div></div><div><div class="food-price">~4–6 RON/kg</div><div class="food-where">Oriunde</div></div></div>
+          <div class="food-item"><div><div class="food-name">Lămâi</div><div class="food-detail">Vitamina C, limonene, alcalinizant. Adaugă în apă/salate</div><div class="food-brands">Piețe, toate rețelele</div></div><div><div class="food-price">~5–8 RON/kg</div><div class="food-where">Oriunde</div></div></div>
+        </div>
+      </div>
+      <div class="cat-block">
+        <div class="cat-header" data-cat="legume-proaspete"><span class="cat-icon">🥬</span><span class="cat-title">Legume proaspete & verdețuri</span><span class="cat-arrow" id="arr-legume-proaspete">▶</span></div>
+        <div class="cat-body" id="cat-legume-proaspete">
+          <div class="subcat">Legume proaspete</div>
+          <div class="food-item"><div><div class="food-name">Roșii</div><div class="food-detail">Licopen (antioxidant puternic, crește la gătit), vitamina C, potasiu</div><div class="food-brands">Piețe locale, sezoniere</div></div><div><div class="food-price">~4–8 RON/kg</div><div class="food-where">Piețe, oriunde</div></div></div>
+          <div class="food-item"><div><div class="food-name">Ardei gras (roșu/galben)</div><div class="food-detail">Vitamina C (3x mai mult decât portocala), beta-caroten, folat</div><div class="food-brands">Piețe, toate rețelele</div></div><div><div class="food-price">~6–10 RON/kg</div><div class="food-where">Piețe, oriunde</div></div></div>
+          <div class="food-item"><div><div class="food-name">Castraveți</div><div class="food-detail">Hidratanți, vitamina K, silaniu, fibre coajă</div><div class="food-brands">Piețe locale, sezoniere</div></div><div><div class="food-price">~3–6 RON/kg</div><div class="food-where">Piețe, oriunde</div></div></div>
+          <div class="food-item"><div><div class="food-name">Sfeclă roșie (proaspătă)</div><div class="food-detail">Nitrați naturali (199 mg/100g), folat, fier, betalaine. Esențial sportivi</div><div class="food-brands">Piețe, Kaufland, Lidl</div></div><div><div class="food-price">~3–5 RON/kg</div><div class="food-where">Piețe, Kaufland</div></div></div>
+          <div class="food-item"><div><div class="food-name">Morcovi</div><div class="food-detail">Beta-caroten, fibre, vitamina A. Biodisponibilitate crește la gătit</div><div class="food-brands">Piețe, toate rețelele</div></div><div><div class="food-price">~3–5 RON/kg</div><div class="food-where">Oriunde</div></div></div>
+          <div class="food-item"><div><div class="food-name">Varză (albă/roșie)</div><div class="food-detail">Vitamina C, K, sulforafan, fibre. Roșia: antocianine extra</div><div class="food-brands">Piețe locale</div></div><div><div class="food-price">~2–4 RON/kg</div><div class="food-where">Piețe, oriunde</div></div></div>
+          <div class="subcat">Verdețuri</div>
+          <div class="food-item"><div><div class="food-name">Pătrunjel (proaspăt)</div><div class="food-detail">Vitamina C, K, fier, folat, apigenină (antiinflamator)</div><div class="food-brands">Piețe, Kaufland, Lidl</div></div><div><div class="food-price">~2–3 RON/leg.</div><div class="food-where">Piețe, oriunde</div></div></div>
+          <div class="food-item"><div><div class="food-name">Mărar (proaspăt)</div><div class="food-detail">Vitamina C, fier, flavonoide, tradițional românesc</div><div class="food-brands">Piețe, toate rețelele</div></div><div><div class="food-price">~2–3 RON/leg.</div><div class="food-where">Piețe, oriunde</div></div></div>
+          <div class="food-item"><div><div class="food-name">Spanac proaspăt / baby spinach</div><div class="food-detail">Nitrați 236 mg/100g, fier, folat, luteină, vitamina K</div><div class="food-brands">Kaufland, Lidl, Mega Image</div></div><div><div class="food-price">~8–12 RON/200g</div><div class="food-where">Kaufland, Lidl</div></div></div>
+          <div class="food-item"><div><div class="food-name">Busuioc / cimbru / rozmarin</div><div class="food-detail">Uleiuri esențiale, antioxidanți, fără calorii. Excelente la gătit</div><div class="food-brands">Piețe, ghivece Kaufland/Lidl</div></div><div><div class="food-price">~3–5 RON/leg.</div><div class="food-where">Piețe, Kaufland</div></div></div>
+        </div>
+      </div>
+      <div class="cat-block">
         <div class="cat-header" data-cat="legume"><span class="cat-icon">🥦</span><span class="cat-title">Legume congelate</span><span class="cat-arrow" id="arr-legume">▶</span></div>
         <div class="cat-body" id="cat-legume">
-          <p class="note" style="margin-bottom:10px">Valoare nutrițională comparabilă cu proaspete. Branduri proprii retail (Lidl, Kaufland, Carrefour, Penny, Auchan) sunt mai ieftine decât mărcile naționale.</p>
+          <p class="note" style="margin-bottom:10px">Valoare nutrițională comparabilă cu proaspete. Branduri proprii retail sunt mai ieftine.</p>
           <div class="food-item"><div><div class="food-name">Broccoli congelat</div><div class="food-detail">Vitamina C, K, sulforafan, fibre</div><div class="food-brands">Bonduelle, Edenia, Freshona (Lidl), K-Classic (Kaufland), Hortex</div></div><div><div class="food-price">~8–12 RON/400g</div><div class="food-where">Lidl, Kaufland, Carrefour</div></div></div>
           <div class="food-item"><div><div class="food-name">Spanac congelat</div><div class="food-detail">Fier, folat, vitamina K, luteină</div><div class="food-brands">Bonduelle, Edenia, Freshona (Lidl), K-Classic (Kaufland)</div></div><div><div class="food-price">~7–10 RON/400g</div><div class="food-where">Lidl, Kaufland, Mega Image</div></div></div>
           <div class="food-item"><div><div class="food-name">Mix legume</div><div class="food-detail">Fibre, beta-caroten, vitamina C. Versatil, rapid</div><div class="food-brands">Bonduelle, Hortex, Edenia, K-Classic (Kaufland), Freshona (Lidl)</div></div><div><div class="food-price">~7–10 RON/400g</div><div class="food-where">Kaufland, Carrefour, Lidl</div></div></div>
@@ -580,13 +880,24 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div class="food-item"><div><div class="food-name">Orez brun / negru / roșu</div><div class="food-detail">Fibre, magneziu, antioxidanți. IG mai mic față de orez alb</div><div class="food-brands">Uncle Ben's (brun), Kaufland, Carrefour</div></div><div><div class="food-price">~8–14 RON/kg</div><div class="food-where">Kaufland, Carrefour, Mega Image</div></div></div>
           <div class="food-item"><div><div class="food-name">Quinoa</div><div class="food-detail">8g prot/100g gătit, fier, magneziu, proteină completă, fără gluten</div><div class="food-brands">Kaufland bio, Carrefour bio, online</div></div><div><div class="food-price">~18–25 RON/500g</div><div class="food-where">Carrefour, Mega Image, online</div></div></div>
           <div class="food-item"><div><div class="food-name">Hrișcă</div><div class="food-detail">Fără gluten, rutină, proteină completă, IG scăzut</div><div class="food-brands">Driedfruits, Solaris, Kaufland, Plafar</div></div><div><div class="food-price">~10–15 RON/500g</div><div class="food-where">Kaufland, Plafar, online</div></div></div>
+          <div class="food-item"><div><div class="food-name">Mei</div><div class="food-detail">Fără gluten, magneziu, fosfor, fier, fibre. IG moderat-scăzut</div><div class="food-brands">Solaris, Driedfruits, Kaufland, Plafar</div></div><div><div class="food-price">~6–10 RON/500g</div><div class="food-where">Kaufland, Plafar, online</div></div></div>
+          <div class="food-item"><div><div class="food-name">Amarant</div><div class="food-detail">14g prot/100g, fără gluten, fier, calciu, magneziu, lizină ridicată</div><div class="food-brands">Driedfruits, Solaris, online</div></div><div><div class="food-price">~12–18 RON/500g</div><div class="food-where">Online, Plafar, Kaufland bio</div></div></div>
           <div class="food-item"><div><div class="food-name">Cartofi dulci</div><div class="food-detail">Beta-caroten, vitamina C, potasiu, fibre. IG moderat</div><div class="food-brands">Proaspeți: Kaufland, Carrefour; Congelați: Edenia, K-Classic</div></div><div><div class="food-price">~8–14 RON/kg</div><div class="food-where">Lidl, Kaufland, Carrefour</div></div></div>
           <div class="food-item"><div><div class="food-name">Paste integrale</div><div class="food-detail">IG mai mic, fibre, B1. Fierte al dente</div><div class="food-brands">Barilla integrale, K-Classic integrale (Kaufland), Lidl</div></div><div><div class="food-price">~7–11 RON/500g</div><div class="food-where">Lidl, Kaufland, Carrefour</div></div></div>
           <div class="food-item"><div><div class="food-name">Pâine integrală / secară</div><div class="food-detail">Fibre, B1, zinc. Min 6g fibre/100g pe etichetă</div><div class="food-brands">Lidl (secară), Kaufland brutărie, brutării locale</div></div><div><div class="food-price">~8–12 RON/500g</div><div class="food-where">Lidl, Kaufland, brutării</div></div></div>
           <div class="subcat">Simpli (recuperare post-efort)</div>
           <div class="food-item"><div><div class="food-name">Banane</div><div class="food-detail">Potasiu, B6, magneziu. Ideale pre/post-antrenament</div><div class="food-brands">Disponibile la toate rețelele</div></div><div><div class="food-price">~4–6 RON/kg</div><div class="food-where">Oriunde</div></div></div>
+          <div class="food-item"><div><div class="food-name">Miere de albine (crudă)</div><div class="food-detail">IG ridicat, enzime, antioxidanți, prebiotice naturale. Post-efort sau în ceaiuri</div><div class="food-brands">Apicultori locali, piețe, Plafar</div></div><div><div class="food-price">~25–40 RON/500g</div><div class="food-where">Piețe, Plafar, online</div></div></div>
           <div class="food-item"><div><div class="food-name">Orez alb gătit congelat</div><div class="food-detail">Recuperare rapidă post-antrenament</div><div class="food-brands">Uncle Ben's Express, Bonduelle, Edenia</div></div><div><div class="food-price">~10–14 RON/250g</div><div class="food-where">Kaufland, Carrefour, Mega Image</div></div></div>
           <div class="food-item"><div><div class="food-name">Fructe congelate (zmeură, afine, căpșuni)</div><div class="food-detail">Antioxidanți, vitamina C, fibre</div><div class="food-brands">Bonduelle, Edenia, Hortex, Freshona (Lidl), K-Classic (Kaufland)</div></div><div><div class="food-price">~10–15 RON/400g</div><div class="food-where">Lidl, Kaufland, Carrefour, Penny</div></div></div>
+        </div>
+      </div>
+      <div class="cat-block">
+        <div class="cat-header" data-cat="alge"><span class="cat-icon">🌊</span><span class="cat-title">Alge marine</span><span class="cat-arrow" id="arr-alge">▶</span></div>
+        <div class="cat-body" id="cat-alge">
+          <div class="food-item"><div><div class="food-name">Spirulină (pudră / tablete)</div><div class="food-detail">60–70% proteină, fier, B12 (parțial), ficocianină (antiinflamator), clorofilă</div><div class="food-brands">Solaris, Hofigal, iHerb, online</div></div><div><div class="food-price">~20–35 RON/100g</div><div class="food-where">Plafar, online</div></div></div>
+          <div class="food-item"><div><div class="food-name">Nori (foi uscate)</div><div class="food-detail">Iod, vitamina B12, proteine, fibre. Folosit la sushi/snack</div><div class="food-brands">Kaufland, Mega Image, online</div></div><div><div class="food-price">~10–15 RON/10 foi</div><div class="food-where">Kaufland, Mega Image</div></div></div>
+          <div class="food-item"><div><div class="food-name">Wakame (uscat)</div><div class="food-detail">Iod, calciu, magneziu, fucoxantină. Ideal în supe</div><div class="food-brands">Online, magazine asiatice</div></div><div><div class="food-price">~15–25 RON/50g</div><div class="food-where">Online, magazine asiatice</div></div></div>
         </div>
       </div>
     </div>
@@ -620,8 +931,10 @@ async function tryLogin() {
   }
 }
 
+// ======= STORED CALC RESULTS (shared between tabs) =======
+var calcResults = {};
+
 document.addEventListener('DOMContentLoaded', function() {
-  // Check if already authenticated this session
   if(sessionStorage.getItem('nutri-auth') === '1') {
     document.getElementById('login-overlay').classList.add('hidden');
     document.getElementById('main-app').style.display = 'block';
@@ -633,7 +946,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('login-error').style.display = 'none';
   });
 
-  // Tab navigation — touch-safe
+  // Tab navigation
   var allTabs = document.querySelectorAll('.tab');
   var allSections = document.querySelectorAll('.section');
   allTabs.forEach(function(tab) {
@@ -651,13 +964,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Toggle antropometrice section
+  // Toggle antropometrice
   document.getElementById('toggle-antropo').addEventListener('click', function(){
     document.getElementById('body-antropo').classList.toggle('open');
     document.getElementById('arr-antropo').classList.toggle('open');
   });
 
-  // Show/hide sold field based on sex
+  // Show/hide sold field
   document.getElementById('sex').addEventListener('change', function(){
     document.getElementById('wrap-sold').style.display = this.value==='f' ? 'block' : 'block';
   });
@@ -672,7 +985,7 @@ document.addEventListener('DOMContentLoaded', function() {
     selectedConstit = opt.getAttribute('data-constit');
   });
 
-  // MAIN CALCULATION
+  // ======= MAIN CALCULATION =======
   document.getElementById('btn-calc').addEventListener('click', function() {
     var g = parseFloat(document.getElementById('greutate').value);
     var h = parseFloat(document.getElementById('inaltime').value);
@@ -681,101 +994,64 @@ document.addEventListener('DOMContentLoaded', function() {
     var act = parseFloat(document.getElementById('activitate').value);
     var obj = document.getElementById('obiectiv').value;
 
-    // Antropometrice (opționale)
     var talie = parseFloat(document.getElementById('talie').value) || 0;
     var gat = parseFloat(document.getElementById('gat').value) || 0;
     var solduri = parseFloat(document.getElementById('solduri').value) || 0;
-    var hasAntropo = talie > 0 && gat > 0;
-    if(sex==='f' && solduri===0) hasAntropo = false;
 
-    // ======= FORMULE GREUTATE IDEALĂ =======
-    // Devine
+    // ======= GREUTATE IDEALĂ (Devine + Lorentz) =======
     var devine = sex==='m' ? (50 + 0.91*(h-152.4)) : (45.5 + 0.91*(h-152.4));
     devine = Math.max(devine, 40);
-
-    // Lorentz
     var lorentz;
-    if(sex==='m') {
-      lorentz = h - 100 - ((h-150)/4);
-    } else {
-      lorentz = h - 100 - ((h-150)/2.5);
-    }
+    if(sex==='m') { lorentz = h - 100 - ((h-150)/4); }
+    else { lorentz = h - 100 - ((h-150)/2.5); }
     lorentz = Math.max(lorentz, 40);
-
-    // Media Devine + Lorentz
     var giAvg = (devine + lorentz) / 2;
 
-    // Ajustare constituțională
     var constitAdj = 0;
     var constitLabel = 'Nespecificat';
     if(selectedConstit === 'ecto') { constitAdj = -0.05; constitLabel = 'Ectomorf (oase subțiri)'; }
     else if(selectedConstit === 'mezo') { constitAdj = 0; constitLabel = 'Mezomorf (mediu)'; }
     else if(selectedConstit === 'endo') { constitAdj = 0.05; constitLabel = 'Endomorf (robustă)'; }
-
     var giAdjusted = giAvg * (1 + constitAdj);
-
-    // Interval greutate ideală: ±5% din media ajustată
     var giLow = Math.round(giAdjusted * 0.95 * 10) / 10;
     var giHigh = Math.round(giAdjusted * 1.05 * 10) / 10;
-
-    // ======= COMPOZIȚIE CORPORALĂ (U.S. Navy) =======
-    var bf = 0;
-    var bfCat = '';
-    if(hasAntropo) {
-      if(sex==='m') {
-        bf = 86.010 * Math.log10(talie - gat) - 70.041 * Math.log10(h) + 36.76;
-      } else {
-        bf = 163.205 * Math.log10(talie + solduri - gat) - 97.684 * Math.log10(h) - 78.387;
-      }
-      bf = Math.max(bf, 3);
-      bf = Math.min(bf, 60);
-
-      // Categorii BF%
-      if(sex==='m') {
-        if(bf < 6) bfCat = 'Esențial';
-        else if(bf < 14) bfCat = 'Atletic';
-        else if(bf < 18) bfCat = 'Fitness';
-        else if(bf < 25) bfCat = 'Mediu';
-        else bfCat = 'Obez';
-      } else {
-        if(bf < 14) bfCat = 'Esențial';
-        else if(bf < 21) bfCat = 'Atletic';
-        else if(bf < 25) bfCat = 'Fitness';
-        else if(bf < 32) bfCat = 'Mediu';
-        else bfCat = 'Obez';
-      }
-    }
-
-    // LBM & Masa grasă
-    var fatKg = 0, lbm = 0;
-    if(hasAntropo && bf > 0) {
-      fatKg = g * (bf / 100);
-      lbm = g - fatKg;
-    } else {
-      // Estimare LBM fără antropometrice
-      lbm = sex==='m' ? (0.407*g+0.267*h-19.2) : (0.252*g+0.473*h-48.3);
-      fatKg = g - lbm;
-      bf = (fatKg / g) * 100;
-      if(sex==='m') {
-        if(bf < 6) bfCat = 'Esențial';
-        else if(bf < 14) bfCat = 'Atletic';
-        else if(bf < 18) bfCat = 'Fitness';
-        else if(bf < 25) bfCat = 'Mediu';
-        else bfCat = 'Obez';
-      } else {
-        if(bf < 14) bfCat = 'Esențial';
-        else if(bf < 21) bfCat = 'Atletic';
-        else if(bf < 25) bfCat = 'Fitness';
-        else if(bf < 32) bfCat = 'Mediu';
-        else bfCat = 'Obez';
-      }
-    }
 
     // ======= IMC =======
     var imc = g / ((h/100) * (h/100));
     var imcCat = imc<18.5 ? 'Subponderal' : imc<25 ? 'Normal' : imc<30 ? 'Supraponderal' : 'Obezitate';
 
-    // ======= WHtR (Waist-to-Height Ratio) =======
+    // ======= BODY FAT: CUN-BAE Formula =======
+    // BF% = -44.988 + (0.503 × vârstă) + (10.689 × sex) + (3.172 × IMC)
+    //        - (0.026 × IMC²) + (0.181 × IMC × sex) - (0.02 × IMC × vârstă)
+    //        - (0.005 × IMC² × sex) + (0.00021 × IMC² × vârstă)
+    // sex: 0 = masculin, 1 = feminin
+    var sexCun = sex === 'f' ? 1 : 0;
+    var bf = -44.988 + (0.503 * v) + (10.689 * sexCun) + (3.172 * imc)
+             - (0.026 * imc * imc) + (0.181 * imc * sexCun) - (0.02 * imc * v)
+             - (0.005 * imc * imc * sexCun) + (0.00021 * imc * imc * v);
+    bf = Math.max(bf, 3);
+    bf = Math.min(bf, 60);
+
+    var bfCat = '';
+    if(sex==='m') {
+      if(bf < 6) bfCat = 'Esențial';
+      else if(bf < 14) bfCat = 'Atletic';
+      else if(bf < 18) bfCat = 'Fitness';
+      else if(bf < 25) bfCat = 'Mediu';
+      else bfCat = 'Obez';
+    } else {
+      if(bf < 14) bfCat = 'Esențial';
+      else if(bf < 21) bfCat = 'Atletic';
+      else if(bf < 25) bfCat = 'Fitness';
+      else if(bf < 32) bfCat = 'Mediu';
+      else bfCat = 'Obez';
+    }
+
+    // LBM & Masa grasă
+    var fatKg = g * (bf / 100);
+    var lbm = g - fatKg;
+
+    // ======= WHtR =======
     var whtr = 0, whtrCat = '';
     if(talie > 0) {
       whtr = talie / h;
@@ -785,7 +1061,7 @@ document.addEventListener('DOMContentLoaded', function() {
       else whtrCat = 'Risc major';
     }
 
-    // ======= METABOLISM =======
+    // ======= METABOLISM (Mifflin-St. Jeor) =======
     var rmb = sex==='m' ? (10*g + 6.25*h - 5*v + 5) : (10*g + 6.25*h - 5*v - 161);
     var tdee = rmb * act;
 
@@ -803,7 +1079,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // Kg de pierdut (diferența dintre greutatea actuală și media intervalului ideal)
     var dePierdut = g - giAdjusted;
 
     // ======= PILON 1: STATUSUL ACTUAL =======
@@ -815,7 +1090,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('r-fat-kg').textContent = fatKg.toFixed(1) + ' kg (' + bf.toFixed(1) + '%)';
     document.getElementById('r-constit').textContent = constitLabel;
 
-    // BF bar
     var bfViz = document.getElementById('bf-viz');
     bfViz.style.display = 'block';
     var bfPct = Math.min(Math.max(bf / 50 * 100, 0), 100);
@@ -825,19 +1099,15 @@ document.addEventListener('DOMContentLoaded', function() {
     if(talie > 0) {
       document.getElementById('r-whtr').textContent = whtr.toFixed(3);
       document.getElementById('r-whtr-cat').textContent = whtrCat;
-      var whtrViz = document.getElementById('whtr-viz');
-      whtrViz.style.display = 'block';
+      document.getElementById('whtr-viz').style.display = 'block';
       var whtrPct = Math.min(Math.max((whtr - 0.3) / 0.4 * 100, 0), 100);
       document.getElementById('whtr-marker').style.left = whtrPct + '%';
-
       var whtrAlert = document.getElementById('whtr-alert');
       if(whtr >= 0.5) {
         whtrAlert.className = whtr >= 0.6 ? 'danger-box' : 'warn-box';
-        whtrAlert.innerHTML = '⚠️ <strong>Atenție:</strong> Raportul talie/înălțime este ' + whtr.toFixed(3) + ' (optim &lt; 0.50). Acest indicator este corelat cu risc cardiovascular crescut, rezistență la insulină și sindrom metabolic. Se recomandă reducerea circumferinței taliei ca obiectiv prioritar.';
+        whtrAlert.innerHTML = '⚠️ <strong>Atenție:</strong> Raportul talie/înălțime este ' + whtr.toFixed(3) + ' (optim &lt; 0.50). Indicator corelat cu risc cardiovascular crescut, rezistență la insulină și sindrom metabolic.';
         whtrAlert.style.display = 'block';
-      } else {
-        whtrAlert.style.display = 'none';
-      }
+      } else { whtrAlert.style.display = 'none'; }
     } else {
       document.getElementById('r-whtr').textContent = '—';
       document.getElementById('r-whtr-cat').textContent = 'Completează talia';
@@ -845,13 +1115,7 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('whtr-alert').style.display = 'none';
     }
 
-    var bfNote = document.getElementById('bf-note');
-    if(hasAntropo) {
-      bfNote.textContent = 'Body Fat calculat cu U.S. Navy Method (Hodgdon & Beckett, 1984). Precizie: ±3–4% față de DEXA.';
-    } else {
-      bfNote.textContent = 'Body Fat estimat prin formula LBM (aproximativ). Pentru precizie mai mare, completează măsurătorile antropometrice.';
-    }
-
+    document.getElementById('bf-note').textContent = 'Body Fat calculat cu formula CUN-BAE (Gómez-Ambrosi et al. 2012, Univ. Navarra). Bazat pe IMC, vârstă și sex. Precizie comparabilă DEXA, fără necesitatea măsurătorilor antropometrice.';
     document.getElementById('rez-status').style.display = 'block';
 
     // ======= PILON 2: OBIECTIV =======
@@ -862,26 +1126,18 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('r-lorentz').textContent = lorentz.toFixed(1) + ' kg';
     document.getElementById('r-constit-adj').textContent = constitAdj === 0 ? 'Fără (±0%)' : (constitAdj > 0 ? '+5%' : '−5%') + ' (' + constitLabel + ')';
 
-    if(dePierdut > 0) {
-      document.getElementById('r-de-pierdut').textContent = '~' + dePierdut.toFixed(1) + ' kg';
-    } else if(dePierdut < -3) {
-      document.getElementById('r-de-pierdut').textContent = 'Sub greutatea ideală cu ' + Math.abs(dePierdut).toFixed(1) + ' kg';
-    } else {
-      document.getElementById('r-de-pierdut').textContent = 'Ești în intervalul optim';
-    }
+    if(dePierdut > 0) { document.getElementById('r-de-pierdut').textContent = '~' + dePierdut.toFixed(1) + ' kg'; }
+    else if(dePierdut < -3) { document.getElementById('r-de-pierdut').textContent = 'Sub greutatea ideală cu ' + Math.abs(dePierdut).toFixed(1) + ' kg'; }
+    else { document.getElementById('r-de-pierdut').textContent = 'Ești în intervalul optim'; }
 
-    // Recompoziție corporală
     var recompAlert = document.getElementById('recomp-alert');
     var lbmPct = (lbm / g) * 100;
     var lowMuscle = (sex==='m' && lbmPct < 75) || (sex==='f' && lbmPct < 68);
-
     if(lowMuscle && dePierdut > 5) {
       recompAlert.className = 'recomp-box';
-      recompAlert.innerHTML = '💪 <strong>Recomandare: Recompoziție corporală</strong> — Masa musculară relativă este sub optim (' + lbmPct.toFixed(1) + '%). Nu recomandam doar pierderea în greutate, ci simultan creșterea masei musculare prin antrenament de rezistență + aport proteic crescut. Obiectivul real: pierderea de grăsime, nu de "greutate".';
+      recompAlert.innerHTML = '💪 <strong>Recomandare: Recompoziție corporală</strong> — Masa musculară relativă este sub optim (' + lbmPct.toFixed(1) + '%). Recomandăm simultan creșterea masei musculare prin antrenament de rezistență + aport proteic crescut.';
       recompAlert.style.display = 'block';
-    } else {
-      recompAlert.style.display = 'none';
-    }
+    } else { recompAlert.style.display = 'none'; }
 
     document.getElementById('obiectiv-nota').textContent = 'Intervalul ' + giLow.toFixed(0) + '–' + giHigh.toFixed(0) + ' kg este calculat ca media Devine (' + devine.toFixed(1) + ') + Lorentz (' + lorentz.toFixed(1) + ') = ' + giAvg.toFixed(1) + ' kg' + (constitAdj !== 0 ? ', ajustat ' + (constitAdj>0?'+':'') + (constitAdj*100).toFixed(0) + '% pentru constituție ' + constitLabel.toLowerCase() : '') + ', cu marjă de ±5%.';
     document.getElementById('rez-obiectiv').style.display = 'block';
@@ -892,7 +1148,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('r-calorii').textContent = Math.round(calorii);
     document.getElementById('r-deficit').textContent = deficitLabel;
 
-    // Slăbire estimată
     if(obj.startsWith('slabire')) {
       var weeklyLoss = (tdee * deficitPct * 7) / 7700;
       document.getElementById('r-slabire-est').textContent = '~' + weeklyLoss.toFixed(2) + ' kg/săpt.';
@@ -905,7 +1160,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var warnEl = document.getElementById('rmb-warn');
     var okEl = document.getElementById('rmb-ok');
     if(obj!=='mentinere' && obj!=='surplus' && Math.round(tdee*(1-deficitPct)) < rmb) {
-      warnEl.textContent = 'Atenție: caloriile au fost ajustate la RMB ('+Math.round(rmb)+' kcal/zi). Nu coborâm niciodată sub metabolismul bazal — acest prag protejează masa musculară, funcția tiroidiană și metabolismul pe termen lung.';
+      warnEl.textContent = 'Atenție: caloriile au fost ajustate la RMB ('+Math.round(rmb)+' kcal/zi). Nu coborâm niciodată sub metabolismul bazal — protejează masa musculară, funcția tiroidiană și metabolismul.';
       warnEl.style.display = 'block'; okEl.style.display = 'none';
     } else if(obj!=='mentinere' && obj!=='surplus') {
       okEl.textContent = 'Deficit aplicat corect: '+Math.round(calorii)+' kcal/zi, cu '+Math.round(calorii-rmb)+' kcal peste RMB.';
@@ -914,40 +1169,165 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('rez-energie').style.display = 'block';
 
-    // ======= MACRONUTRIENȚI (pe greutatea ideală) =======
+    // ======= MACRONUTRIENȚI =======
+    // PUNCT 2: Grăsimi individualizate pe obiectiv
     var factorProt = act<=1.2 ? 1.3 : act<=1.375 ? 1.5 : act<=1.55 ? 1.7 : act<=1.725 ? 2.0 : 2.2;
     if(obj==='surplus') factorProt = Math.min(factorProt+0.2, 2.4);
     if(obj.startsWith('slabire')) factorProt = Math.max(factorProt+0.1, 1.4);
 
-    // Proteine pe greutatea ideală (medie ajustată)
+    // Proteine pe greutatea ideală
     var prot = Math.round(giAdjusted * factorProt);
     var protKcal = prot * 4;
-    var grasKcal = Math.round(calorii * 0.28);
+
+    // Grăsimi individualizate: slăbire 20-25%, menținere 25-30%, surplus 28-32%
+    var grasPct;
+    if(obj.startsWith('slabire')) { grasPct = 0.22; }
+    else if(obj==='surplus') { grasPct = 0.30; }
+    else { grasPct = 0.27; }
+
+    var grasKcal = Math.round(calorii * grasPct);
     var gras = Math.round(grasKcal / 9);
+
+    // PUNCT 3: Slăbire inteligentă — deficitul vine din carbohidrați, proteinele rămân protejate
     var carbKcal = Math.round(calorii - protKcal - grasKcal);
+    if(carbKcal < 0) carbKcal = 0;
     var carb = Math.round(carbKcal / 4);
 
     var actLabel = act<=1.2?'sedentar':act<=1.375?'ușor activ':act<=1.55?'moderat activ':act<=1.725?'foarte activ':'extrem de activ';
+    var grasLabel = obj.startsWith('slabire') ? '22% (slăbire — minim grăsimi esențiale)' : obj==='surplus' ? '30% (surplus — suport hormonal)' : '27% (menținere)';
+
     document.getElementById('m-prot').textContent = prot+'g ('+Math.round(protKcal)+' kcal) — '+factorProt.toFixed(1)+'g/kg gr. ideală';
     document.getElementById('m-carb').textContent = carb+'g ('+Math.round(carbKcal)+' kcal)';
-    document.getElementById('m-gras').textContent = gras+'g ('+Math.round(grasKcal)+' kcal)';
-    document.getElementById('macro-nota').textContent = 'Proteine calculate pe greutatea ideală ('+giAdjusted.toFixed(1)+' kg = medie Devine+Lorentz'+(constitAdj!==0?' ajustată constituțional':'')+'), factor '+factorProt.toFixed(1)+'g/kg, profil '+actLabel+(obj==='surplus'?', masă musculară':obj.startsWith('slabire')?', slăbire':'')+'.';
+    document.getElementById('m-gras').textContent = gras+'g ('+Math.round(grasKcal)+' kcal) — '+grasLabel;
+    document.getElementById('macro-nota').textContent = 'Proteine calculate pe greutatea ideală ('+giAdjusted.toFixed(1)+' kg), factor '+factorProt.toFixed(1)+'g/kg, profil '+actLabel+'. Grăsimi: '+grasLabel+'. Deficitul caloric (dacă există) provine integral din carbohidrați — proteinele și grăsimile minime sunt protejate.';
     document.getElementById('macro-content').style.display = 'block';
     document.getElementById('macro-nedisponibil').style.display = 'none';
 
-    // ======= HIDRATARE (pe greutatea ideală) =======
+    // ======= HIDRATARE =======
     var hBaza = (giAdjusted * 35 / 1000).toFixed(1);
     var hActiv = ((giAdjusted * 35 + 500) / 1000).toFixed(1);
     document.getElementById('h-baza').textContent = hBaza;
     document.getElementById('h-activ').textContent = hActiv;
     document.getElementById('hidro-content').style.display = 'block';
     document.getElementById('hidro-nedisponibil').style.display = 'none';
+
+    // ======= STORE FOR SPORT TAB =======
+    calcResults = { g:g, h:h, v:v, sex:sex, act:act, obj:obj, rmb:rmb, tdee:tdee, calorii:calorii, giAdjusted:giAdjusted, prot:prot, carb:carb, gras:gras };
+
+    // ======= SPORT TAB: Macro sportivi =======
+    document.getElementById('sm-prot-aero').textContent = (g*1.6).toFixed(0)+'–'+(g*2.7).toFixed(0)+' g/zi (1.6–2.7 g/kg)';
+    document.getElementById('sm-prot-ana').textContent = (g*2.2).toFixed(0)+'–'+(g*3.0).toFixed(0)+' g/zi (2.2–3.0 g/kg)';
+    document.getElementById('sm-carb-low').textContent = (g*3).toFixed(0)+'–'+(g*5).toFixed(0)+' g/zi (3–5 g/kg)';
+    document.getElementById('sm-carb-med').textContent = (g*5).toFixed(0)+'–'+(g*7).toFixed(0)+' g/zi (5–7 g/kg)';
+    document.getElementById('sm-carb-high').textContent = (g*6).toFixed(0)+'–'+(g*10).toFixed(0)+' g/zi (6–10 g/kg)';
+    document.getElementById('sm-prot-meal').textContent = (g*0.25).toFixed(0)+' g/masă (0.20–0.25 g/kg)';
+    document.getElementById('sm-prot-post').textContent = (g*0.35).toFixed(0)+' g (0.35 g/kg, doar dacă se antrenează toată musculatura)';
+    document.getElementById('sport-macro-content').style.display = 'block';
+    document.getElementById('sport-macro-nedisponibil').style.display = 'none';
+
+    // Sport suplimente personalizate
+    var nitMin = (g*6.4).toFixed(0);
+    var nitMax = (g*12.8).toFixed(0);
+    document.getElementById('sp-nitrati-dose').textContent = nitMin+'–'+nitMax+' mg nitrați/zi (6.4–12.8 mg/kg)';
+    document.getElementById('sp-nitrati-detail').textContent = 'Necesar zilnic: '+nitMin+'–'+nitMax+' mg nitrați. Echivalent: ~200–280 ml suc de sfeclă. Sau combinație vegetale bogate în nitrați.';
+    document.getElementById('sport-sup-content').style.display = 'block';
+    document.getElementById('sport-sup-nedisponibil').style.display = 'none';
+
+    // ======= CALORIE CYCLING =======
+    updateCycling(calorii, prot, gras, carb, obj);
   });
 
-  // Suplimente toggle
+  // ======= CALORIE CYCLING TOGGLE =======
+  document.getElementById('cycling-toggle').addEventListener('change', function() {
+    document.getElementById('cycling-content').style.display = this.checked ? 'block' : 'none';
+  });
+
+  function updateCycling(calorii, prot, gras, carb, obj) {
+    if(!calorii || calorii <= 0) return;
+    // 3 zile HIGH (antrenament), 1 zi MODERATE, 3 zile LOW (odihnă)
+    // Media = calorii țintă
+    // High = +15%, Low = -12%, Mod = media
+    var highCal = Math.round(calorii * 1.15);
+    var lowCal = Math.round(calorii * 0.88);
+    var modCal = Math.round((calorii * 7 - highCal * 3 - lowCal * 3));
+    // Proteinele rămân constante. Grăsimile rămân constante. Diferența vine din carbohidrați
+    var protKcal = prot * 4;
+    var grasKcal = gras * 9;
+
+    var highCarb = Math.round((highCal - protKcal - grasKcal) / 4);
+    var lowCarb = Math.round((lowCal - protKcal - grasKcal) / 4);
+    var modCarb = Math.round((modCal - protKcal - grasKcal) / 4);
+    if(highCarb < 0) highCarb = 0;
+    if(lowCarb < 0) lowCarb = 0;
+    if(modCarb < 0) modCarb = 0;
+
+    var days = ['Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă','Duminică'];
+    var pattern = ['high','low','high','low','high','mod','low'];
+    var html = '<table class="cycling-table"><thead><tr><th>Zi</th><th>Tip</th><th>Kcal</th><th>Prot (g)</th><th>Carb (g)</th><th>Gras (g)</th></tr></thead><tbody>';
+    var totalCal = 0;
+    for(var i=0; i<7; i++) {
+      var type = pattern[i];
+      var cal = type==='high' ? highCal : type==='low' ? lowCal : modCal;
+      var cb = type==='high' ? highCarb : type==='low' ? lowCarb : modCarb;
+      var cls = type==='high' ? 'day-high' : type==='low' ? 'day-low' : 'day-mod';
+      var label = type==='high' ? 'Antrenament' : type==='low' ? 'Odihnă' : 'Moderat';
+      totalCal += cal;
+      html += '<tr><td>'+days[i]+'</td><td class="'+cls+'">'+label+'</td><td>'+cal+'</td><td>'+prot+'</td><td>'+cb+'</td><td>'+gras+'</td></tr>';
+    }
+    html += '</tbody></table>';
+    document.getElementById('cycling-table-wrap').innerHTML = html;
+    document.getElementById('cycling-nota').textContent = 'Media săptămânală: ~'+Math.round(totalCal/7)+' kcal/zi (ținta: '+Math.round(calorii)+' kcal). Proteinele și grăsimile sunt constante — variația vine exclusiv din carbohidrați. Zilele HIGH = zile de antrenament intens; zilele LOW = zile de odihnă/activitate ușoară.';
+  }
+
+  // ======= SPORT: Calculator MET =======
+  document.getElementById('btn-sport-calc').addEventListener('click', function() {
+    var rmb = calcResults.rmb;
+    if(!rmb || rmb <= 0) {
+      alert('Calculează mai întâi profilul din tab-ul Profil.');
+      return;
+    }
+    var metCustom = parseFloat(document.getElementById('sport-met-custom').value);
+    var metSelect = parseFloat(document.getElementById('sport-activitate').value);
+    var met = (metCustom && metCustom > 0) ? metCustom : metSelect;
+    var durata = parseFloat(document.getElementById('sport-durata').value) || 60;
+
+    // Formula exactă: Calorii/oră = MET × RMB / 24
+    var oneMet = rmb / 24;
+    var calPerHour = met * oneMet;
+    var calTotal = calPerHour * (durata / 60);
+
+    document.getElementById('sp-calorii').textContent = Math.round(calTotal);
+    document.getElementById('sp-cal-ora').textContent = Math.round(calPerHour);
+    document.getElementById('sp-met').textContent = met;
+    document.getElementById('sp-1met').textContent = oneMet.toFixed(1);
+    document.getElementById('sp-formula').innerHTML = '<strong>Calcul:</strong> 1 MET personal = RMB/24 = '+Math.round(rmb)+'/24 = '+oneMet.toFixed(1)+' kcal/h. Activitate: '+met+' MET × '+oneMet.toFixed(1)+' = '+calPerHour.toFixed(1)+' kcal/h × '+(durata/60).toFixed(2)+'h = <strong>'+Math.round(calTotal)+' kcal</strong>.';
+    document.getElementById('sport-result').style.display = 'block';
+  });
+
+  // ======= COLLAPSE TOGGLES (all) =======
+  var collapseToggles = [
+    ['toggle-pre-sport','body-pre-sport','arr-pre-sport'],
+    ['toggle-intra-sport','body-intra-sport','arr-intra-sport'],
+    ['toggle-post-sport','body-post-sport','arr-post-sport'],
+    ['toggle-ratia-hg','body-ratia-hg','arr-ratia-hg'],
+    ['toggle-ratia-hp','body-ratia-hp','arr-ratia-hp'],
+    ['toggle-ratia-concurs','body-ratia-concurs','arr-ratia-concurs']
+  ];
+  collapseToggles.forEach(function(ids) {
+    var toggle = document.getElementById(ids[0]);
+    if(toggle) {
+      toggle.addEventListener('click', function(){
+        document.getElementById(ids[1]).classList.toggle('open');
+        document.getElementById(ids[2]).classList.toggle('open');
+      });
+    }
+  });
+
+  // Suplimente toggle (all)
   document.querySelectorAll('.sup-header').forEach(function(hdr){
     hdr.addEventListener('click',function(){
-      document.getElementById('sup-'+hdr.getAttribute('data-sup')).classList.toggle('open');
+      var supId = hdr.getAttribute('data-sup');
+      if(supId) document.getElementById('sup-'+supId).classList.toggle('open');
     });
   });
 
