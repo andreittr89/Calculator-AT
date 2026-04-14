@@ -686,6 +686,178 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="info-box">Rația de concurs este psihologică, nu energogenă. Energia vine din rezervele încărcate anterior.</div>
       </div>
     </div>
+
+    <!-- TIP DE EFORT — CORELAȚIE NUTRIȚIONALĂ -->
+    <div class="card">
+      <p class="section-title">Tip de efort — Recomandări nutriționale specifice</p>
+      <p class="note" style="margin-bottom:12px">Selectează tipul de efort predominant al clientului:</p>
+      <div class="constit-opts" id="tip-efort-wrap" style="flex-wrap:wrap">
+        <div class="constit-opt" data-efort="alactacid" style="min-width:140px"><span class="co-icon">⚡</span><span class="co-label"><strong>Anaerob alactacid</strong><br>0–10 sec</span></div>
+        <div class="constit-opt" data-efort="lactacid" style="min-width:140px"><span class="co-icon">🔥</span><span class="co-label"><strong>Anaerob lactacid</strong><br>10 sec–2 min</span></div>
+        <div class="constit-opt" data-efort="aerob-lac" style="min-width:140px"><span class="co-icon">💨</span><span class="co-label"><strong>Aerob lactacid</strong><br>&gt;2–3 min intens</span></div>
+        <div class="constit-opt" data-efort="aerob-alac" style="min-width:140px"><span class="co-icon">🚶</span><span class="co-label"><strong>Aerob alactacid</strong><br>Efort ușor, lung</span></div>
+      </div>
+      <div id="efort-result" style="display:none;margin-top:14px">
+        <div id="efort-detail"></div>
+      </div>
+    </div>
+
+    <!-- MICROCICLU NUTRIȚIONAL -->
+    <div class="card">
+      <p class="section-title">Microciclu nutrițional săptămânal</p>
+      <p class="note" style="margin-bottom:12px">Sincronizarea nutriției cu intensitatea zilei — zile de efort vs. zile de pauză:</p>
+
+      <div class="collapse-header" id="toggle-zi-efort">
+        <span class="collapse-arrow" id="arr-zi-efort">▶</span>
+        <span style="font-size:14px;font-weight:500">Zile cu efort intens (forță, HIIT, anaerob)</span>
+      </div>
+      <div class="collapse-body" id="body-zi-efort">
+        <div class="result-row"><span class="result-label">Obiectiv</span><span class="result-val">Susținerea performanței + refacere rapidă</span></div>
+        <div class="result-row"><span class="result-label">Carbohidrați</span><span class="result-val">Crescuți — refacere glicogen muscular</span></div>
+        <div class="result-row"><span class="result-label">Proteine</span><span class="result-val">Min. 1.8–2.2 g/kg corp</span></div>
+        <div class="result-row"><span class="result-label">Grăsimi</span><span class="result-val">Moderate — evitare exces pre-antrenament</span></div>
+        <div class="result-row"><span class="result-label">Structura zilei</span><span class="result-val">Mic dejun carb+prot → Gustare pre-antrenament → Post-antrenament prot+carb rapid → Cină legume+proteină</span></div>
+        <div class="info-box">Exemple: ovăz+iaurt dimineața, banană+nuci pre-antrenament, shake+banană post, somon+orez+legume cină.</div>
+      </div>
+
+      <div class="collapse-header" id="toggle-zi-pauza">
+        <span class="collapse-arrow" id="arr-zi-pauza">▶</span>
+        <span style="font-size:14px;font-weight:500">Zile de pauză activă (yoga, mers, stretching)</span>
+      </div>
+      <div class="collapse-body" id="body-zi-pauza">
+        <div class="result-row"><span class="result-label">Obiectiv</span><span class="result-val">Refacere + reglare hormonală</span></div>
+        <div class="result-row"><span class="result-label">Carbohidrați</span><span class="result-val">Reduși — accent pe surse lente (linte, orez brun)</span></div>
+        <div class="result-row"><span class="result-label">Grăsimi</span><span class="result-val">Crescute — avocado, pește gras, uleiuri presate la rece</span></div>
+        <div class="result-row"><span class="result-label">Proteine</span><span class="result-val">Constante — susținere masă musculară</span></div>
+        <div class="result-row"><span class="result-label">Accent</span><span class="result-val">Micronutrienți: Mg, Zn, Omega-3, vitamine B</span></div>
+        <div class="info-box">Exemple: ouă+avocado+pâine integrală dimineața, somon+quinoa+broccoli prânz, brânză de vaci+nuci seara.</div>
+      </div>
+
+      <div class="collapse-header" id="toggle-carb-timing">
+        <span class="collapse-arrow" id="arr-carb-timing">▶</span>
+        <span style="font-size:14px;font-weight:500">Timing carbohidrați — înainte / după antrenament</span>
+      </div>
+      <div class="collapse-body" id="body-carb-timing">
+        <div class="result-row"><span class="result-label">Pre-antrenament (60–90 min)</span><span class="result-val">Carb moderați-rapizi + strop de proteină</span></div>
+        <div class="result-row"><span class="result-label">Exemple pre</span><span class="result-val">Banană+10 migdale, ovăz+miere, tartină+ricotta</span></div>
+        <div class="result-row"><span class="result-label">Post-antrenament (30–60 min)</span><span class="result-val">Carb rapizi + proteină completă (fereastra anabolică)</span></div>
+        <div class="result-row"><span class="result-label">Exemple post</span><span class="result-val">Shake+banană, cartofi dulci+curcan, orez+ton</span></div>
+        <div class="result-row"><span class="result-label">Proteine/masă</span><span class="result-val">0.4–0.5 g/kg per masă, 3–4 mese/zi</span></div>
+        <div class="warn-box">Lipsa mesei post-antrenament scade refacerea glicogenului, prelungește catabolismul muscular și crește pofta de dulce ulterior.</div>
+      </div>
+    </div>
+
+    <!-- CHESTIONAR OBOSEALĂ -->
+    <div class="card">
+      <p class="section-title">Evaluare nivel oboseală / suprantrenament</p>
+      <p class="note" style="margin-bottom:12px">Răspunde la întrebările de mai jos pentru a evalua starea curentă a clientului:</p>
+      <div id="oboseala-form">
+        <div style="margin-bottom:10px">
+          <p style="font-size:13px;font-weight:500;margin-bottom:6px">1. Performanța a scăzut în ultimele 7–10 zile?</p>
+          <div style="display:flex;gap:8px"><span class="chip" data-ob="q1" data-val="1">Da</span><span class="chip" data-ob="q1" data-val="0">Nu</span></div>
+        </div>
+        <div style="margin-bottom:10px">
+          <p style="font-size:13px;font-weight:500;margin-bottom:6px">2. Motivația pentru antrenament este scăzută?</p>
+          <div style="display:flex;gap:8px"><span class="chip" data-ob="q2" data-val="1">Da</span><span class="chip" data-ob="q2" data-val="0">Nu</span></div>
+        </div>
+        <div style="margin-bottom:10px">
+          <p style="font-size:13px;font-weight:500;margin-bottom:6px">3. Dureri musculare persistente (&gt;3 zile)?</p>
+          <div style="display:flex;gap:8px"><span class="chip" data-ob="q3" data-val="1">Da</span><span class="chip" data-ob="q3" data-val="0">Nu</span></div>
+        </div>
+        <div style="margin-bottom:10px">
+          <p style="font-size:13px;font-weight:500;margin-bottom:6px">4. Tulburări de somn (insomnie, somn agitat)?</p>
+          <div style="display:flex;gap:8px"><span class="chip" data-ob="q4" data-val="1">Da</span><span class="chip" data-ob="q4" data-val="0">Nu</span></div>
+        </div>
+        <div style="margin-bottom:10px">
+          <p style="font-size:13px;font-weight:500;margin-bottom:6px">5. Apetit haotic (pofte de dulce, foame constantă sau lipsă apetit)?</p>
+          <div style="display:flex;gap:8px"><span class="chip" data-ob="q5" data-val="1">Da</span><span class="chip" data-ob="q5" data-val="0">Nu</span></div>
+        </div>
+        <div style="margin-bottom:10px">
+          <p style="font-size:13px;font-weight:500;margin-bottom:6px">6. Iritabilitate crescută sau dificultăți de concentrare?</p>
+          <div style="display:flex;gap:8px"><span class="chip" data-ob="q6" data-val="1">Da</span><span class="chip" data-ob="q6" data-val="0">Nu</span></div>
+        </div>
+        <div class="calc-btn" id="btn-oboseala" role="button" tabindex="0">Evaluează nivelul de oboseală →</div>
+      </div>
+      <div id="oboseala-result" style="display:none;margin-top:14px">
+        <div id="oboseala-detail"></div>
+      </div>
+    </div>
+
+    <!-- PROTOCOALE DE REFACERE EXTINSE -->
+    <div class="card">
+      <p class="section-title">Protocoale de refacere — ghid complet</p>
+
+      <div class="collapse-header" id="toggle-ref-activa">
+        <span class="collapse-arrow" id="arr-ref-activa">▶</span>
+        <span style="font-size:14px;font-weight:500">Refacere activă</span>
+      </div>
+      <div class="collapse-body" id="body-ref-activa">
+        <div class="result-row"><span class="result-label">Ce este</span><span class="result-val">Mișcare de intensitate scăzută — stimulează circulația, elimină metaboliți</span></div>
+        <div class="result-row"><span class="result-label">Exemple</span><span class="result-val">Plimbări, alergare ușoară, yoga, stretching, foam rolling, cycling ușor</span></div>
+        <div class="result-row"><span class="result-label">Beneficii</span><span class="result-val">Reduce DOMS, îmbunătățește fluxul sangvin, menține ritm metabolic</span></div>
+        <div class="info-box">Ideală pentru clienți sedentari, suprasolicitați psihic sau rigizi muscular.</div>
+      </div>
+
+      <div class="collapse-header" id="toggle-ref-pasiva">
+        <span class="collapse-arrow" id="arr-ref-pasiva">▶</span>
+        <span style="font-size:14px;font-weight:500">Refacere pasivă</span>
+      </div>
+      <div class="collapse-body" id="body-ref-pasiva">
+        <div class="result-row"><span class="result-label">Ce este</span><span class="result-val">Metode pasive de regenerare tisulară și recalibrare a sistemului nervos</span></div>
+        <div class="result-row"><span class="result-label">Exemple</span><span class="result-val">Somn profund, masaj terapeutic, crioterapie, dușuri reci, băi de magneziu, saună</span></div>
+        <div class="result-row"><span class="result-label">Beneficii</span><span class="result-val">Regenerare tisulară, sinteză hormonală (testosteron, GH), reducere inflamație</span></div>
+        <div class="info-box">Esențial în perioadele de antrenamente grele, stres crescut sau pre-competiție.</div>
+      </div>
+
+      <div class="collapse-header" id="toggle-ref-nutri">
+        <span class="collapse-arrow" id="arr-ref-nutri">▶</span>
+        <span style="font-size:14px;font-weight:500">Refacere nutrițională</span>
+      </div>
+      <div class="collapse-body" id="body-ref-nutri">
+        <div class="result-row"><span class="result-label">Fereastra anabolică</span><span class="result-val">30–60 min post-antrenament → carb + proteine (raport 2:1)</span></div>
+        <div class="result-row"><span class="result-label">Hidratare activă</span><span class="result-val">După 1h antrenament intens → apă + sodiu + potasiu</span></div>
+        <div class="result-row"><span class="result-label">Antioxidanți naturali</span><span class="result-val">Legume, fructe, turmeric, ceai verde</span></div>
+        <div class="result-row"><span class="result-label">Exemple mese</span><span class="result-val">Shake+banană+ovăz, omletă+legume+orez, somon+cartofi dulci</span></div>
+        <div class="info-box">Refacerea nutrițională bine făcută reduce timpul de recuperare cu 30–40%.</div>
+      </div>
+
+      <div class="collapse-header" id="toggle-ref-psih">
+        <span class="collapse-arrow" id="arr-ref-psih">▶</span>
+        <span style="font-size:14px;font-weight:500">Refacere psihologică</span>
+      </div>
+      <div class="collapse-body" id="body-ref-psih">
+        <div class="result-row"><span class="result-label">Strategii</span><span class="result-val">Mindfulness 5–10 min/zi, respirație vagală, relaxare autogenă</span></div>
+        <div class="result-row"><span class="result-label">Activități</span><span class="result-val">Timp în natură, contact cu solul, hobby-uri, fără ecrane</span></div>
+        <div class="result-row"><span class="result-label">De ce contează</span><span class="result-val">Cortizolul crescut afectează refacerea musculară, hormonală și somnul</span></div>
+      </div>
+
+      <div class="collapse-header" id="toggle-ref-somn">
+        <span class="collapse-arrow" id="arr-ref-somn">▶</span>
+        <span style="font-size:14px;font-weight:500">Somnul — arhitectul regenerării</span>
+      </div>
+      <div class="collapse-body" id="body-ref-somn">
+        <div class="result-row"><span class="result-label">Necesar</span><span class="result-val">7–9 ore somn/noapte pentru adulți activi</span></div>
+        <div class="result-row"><span class="result-label">Faza NREM (profundă)</span><span class="result-val">Secreția GH → sinteză proteică, refacere tisulară</span></div>
+        <div class="result-row"><span class="result-label">Faza REM</span><span class="result-val">Memorie motorie, focus, coordonare, neurotransmițători</span></div>
+        <div class="result-row"><span class="result-label">Somn insuficient</span><span class="result-val">Cortizol ↑, testosteron ↓, GH ↓, leptină ↓, grelină ↑ → pofte + grăsime abdominală</span></div>
+        <div class="result-row"><span class="result-label">Recomandări</span><span class="result-val">Fără ecrane 1h pre-somn, Mg bisglicinat, L-teanină, lumini calde, stretching blând</span></div>
+        <div class="warn-box">Fără 7–9h somn profund, nutriția și antrenamentul își pierd 30–50% din eficiență.</div>
+      </div>
+
+      <div class="collapse-header" id="toggle-ref-adaptogeni">
+        <span class="collapse-arrow" id="arr-ref-adaptogeni">▶</span>
+        <span style="font-size:14px;font-weight:500">Adaptogeni și aminoacizi pentru refacere</span>
+      </div>
+      <div class="collapse-body" id="body-ref-adaptogeni">
+        <div class="result-row"><span class="result-label">Ashwagandha</span><span class="result-val">Reglează cortizolul, crește reziliența la stres</span></div>
+        <div class="result-row"><span class="result-label">Rhodiola Rosea</span><span class="result-val">Crește capacitatea de efort, reduce oboseala mentală</span></div>
+        <div class="result-row"><span class="result-label">Reishi / Cordyceps</span><span class="result-val">Imunitate, energie, refacere hormonală</span></div>
+        <div class="result-row"><span class="result-label">BCAA</span><span class="result-val">Protejează masa musculară, reduce degradarea proteică în efort</span></div>
+        <div class="result-row"><span class="result-label">EAA</span><span class="result-val">Toți aminoacizii esențiali — refacere completă când aportul proteic e redus</span></div>
+        <div class="result-row"><span class="result-label">Glutamină</span><span class="result-val">Imunitate, integritate mucoasă intestinală — util în sporturi de anduranță</span></div>
+        <div class="result-row"><span class="result-label">Electroliți</span><span class="result-val">Sodiu, potasiu, Mg, Ca — reechilibrare post-transpirație. Sare Himalaya, apă de cocos</span></div>
+      </div>
+    </div>
   </div>
 
   <!-- INTOLERANTE -->
@@ -1320,7 +1492,16 @@ document.addEventListener('DOMContentLoaded', function() {
     ['toggle-post-sport','body-post-sport','arr-post-sport'],
     ['toggle-ratia-hg','body-ratia-hg','arr-ratia-hg'],
     ['toggle-ratia-hp','body-ratia-hp','arr-ratia-hp'],
-    ['toggle-ratia-concurs','body-ratia-concurs','arr-ratia-concurs']
+    ['toggle-ratia-concurs','body-ratia-concurs','arr-ratia-concurs'],
+    ['toggle-zi-efort','body-zi-efort','arr-zi-efort'],
+    ['toggle-zi-pauza','body-zi-pauza','arr-zi-pauza'],
+    ['toggle-carb-timing','body-carb-timing','arr-carb-timing'],
+    ['toggle-ref-activa','body-ref-activa','arr-ref-activa'],
+    ['toggle-ref-pasiva','body-ref-pasiva','arr-ref-pasiva'],
+    ['toggle-ref-nutri','body-ref-nutri','arr-ref-nutri'],
+    ['toggle-ref-psih','body-ref-psih','arr-ref-psih'],
+    ['toggle-ref-somn','body-ref-somn','arr-ref-somn'],
+    ['toggle-ref-adaptogeni','body-ref-adaptogeni','arr-ref-adaptogeni']
   ];
   collapseToggles.forEach(function(ids) {
     var toggle = document.getElementById(ids[0]);
@@ -1366,6 +1547,119 @@ document.addEventListener('DOMContentLoaded', function() {
       if(sel.includes('Fructoză')) txt+='Evitați: miere, sirop agave, fructe dulci în exces. ';
       msg.textContent=txt;
     } else {msg.style.display='none';}
+  });
+
+  // ======= TIP DE EFORT — SELECTOR =======
+  var selectedEfort = '';
+  document.getElementById('tip-efort-wrap').addEventListener('click', function(e) {
+    var opt = e.target.closest('.constit-opt');
+    if(!opt) return;
+    this.querySelectorAll('.constit-opt').forEach(function(o){o.classList.remove('sel');});
+    opt.classList.add('sel');
+    selectedEfort = opt.getAttribute('data-efort');
+
+    var info = {
+      'alactacid': {
+        title: 'Anaerob alactacid (0–10 sec)',
+        sistem: 'ATP + CP (fosfagen) — fără oxigen, fără acid lactic',
+        fibre: 'Tip IIx — explozive, rapide, obosesc repede',
+        exemple: 'Sprinturi 10–40m, ridicări maxime (1–3RM), salturi verticale, AirBike 6–10 sec',
+        macro: 'Nu necesită aport prelungit de carbohidrați. Creatina este suplimentul cheie — crește disponibilitatea fosfocreatinei.',
+        supliment: 'Creatină monohidrat 3–5 g/zi, Proteine post-antrenament pentru refacere neuromusculară',
+        pauze: 'Obligatoriu: 2–5 min pauză între serii pentru refacerea CP',
+        greseli: 'Lucru exploziv cu oboseală, pauze insuficiente, combinare cu HIIT fără strategie',
+        badgeClass: 'badge-ok', badgeText: 'Forță · Putere · Viteză'
+      },
+      'lactacid': {
+        title: 'Anaerob lactacid (10 sec – 2 min)',
+        sistem: 'Glicoliză anaerobă — produce acid lactic din glicogen, fără oxigen',
+        fibre: 'Tip IIa — puternice și mai rezistente decât IIx',
+        exemple: 'Seturi 10–15 rep greutăți medii-mari, HIIT 30/30, Tabata, sprint/înot 200–400m',
+        macro: 'Carbohidrați esențiali — glicogenul muscular e sursa principală. Pre-workout: banană, baton ovăz. Post: carb + proteine.',
+        supliment: 'Carbohidrați pre-efort (1–3 g/kg), Proteine post-efort, BCAA opțional',
+        pauze: 'Evită antrenamente intense zilnice — risc de epuizare și stagnare',
+        greseli: 'Antrenamente intense + low-carb = performanță scăzută. Suprautilizarea HIIT-ului zilnic.',
+        badgeClass: 'badge-warn', badgeText: 'Slăbire · Condiționare · Sculptare'
+      },
+      'aerob-lac': {
+        title: 'Aerob lactacid (>2–3 min efort susținut)',
+        sistem: 'Oxidativ — glucoză + grăsimi cu oxigen, producere ATP mare dar lentă',
+        fibre: 'Tip I (roșii) — rezistente la oboseală',
+        exemple: 'Alergare 30–60 min, cycling, înot, clase aerobic, Zumba, drumeții',
+        macro: 'Carbohidrați + grăsimi (proporții variabile). Efort >60 min: gustare carb complecși + proteine înainte.',
+        supliment: 'Carbohidrați pre și post (2–4 g/kg), Grăsimi sănătoase (omega-3, MCT), Antioxidanți',
+        pauze: '2–3 sesiuni/săpt. de 30–60 min Zone 2 (70–80% FCmax)',
+        greseli: 'Exagerarea cardio → pierdere masă musculară. Cardio pe gol cronic → afectează tiroida.',
+        badgeClass: 'badge-ok', badgeText: 'Anduranță · Sănătate CV'
+      },
+      'aerob-alac': {
+        title: 'Aerob alactacid (efort ușor, durată lungă)',
+        sistem: 'Oxidativ — predominant oxidare grăsimi, consum energetic scăzut',
+        fibre: 'Tip I — fibre lente, rezistență maximă',
+        exemple: 'Plimbări dinamice, recuperare activă, stretching prelungit, mers în natură',
+        macro: 'Grăsimi sănătoase sunt substratul dominant. Alimentație echilibrată, fără suplimentare specifică necesară.',
+        supliment: 'Nu necesită suplimentare specifică. Alimentație echilibrată este suficientă.',
+        pauze: 'Ideal pentru zile de pauză activă, seniori, începători, clienți cu obezitate',
+        greseli: 'Neglijarea efortului ușor Zone 2 în favoarea HIIT-ului exclusiv.',
+        badgeClass: 'badge-ok', badgeText: 'Recuperare · Echilibru · Longevitate'
+      }
+    };
+
+    var d = info[selectedEfort];
+    if(!d) return;
+    var html = '<div style="margin-bottom:8px"><span class="badge '+d.badgeClass+'">'+d.badgeText+'</span></div>';
+    html += '<div class="result-row"><span class="result-label">Tip</span><span class="result-val" style="font-weight:700">'+d.title+'</span></div>';
+    html += '<div class="result-row"><span class="result-label">Sistem energetic</span><span class="result-val">'+d.sistem+'</span></div>';
+    html += '<div class="result-row"><span class="result-label">Fibre musculare</span><span class="result-val">'+d.fibre+'</span></div>';
+    html += '<div class="result-row"><span class="result-label">Exemple</span><span class="result-val">'+d.exemple+'</span></div>';
+    html += '<div class="result-row"><span class="result-label">Macronutrient cheie</span><span class="result-val" style="font-weight:600">'+d.macro+'</span></div>';
+    html += '<div class="result-row"><span class="result-label">Suplimentare</span><span class="result-val">'+d.supliment+'</span></div>';
+    html += '<div class="result-row"><span class="result-label">Pauze / Frecvență</span><span class="result-val">'+d.pauze+'</span></div>';
+    html += '<div class="warn-box" style="margin-top:8px">Greșeli frecvente: '+d.greseli+'</div>';
+
+    document.getElementById('efort-detail').innerHTML = html;
+    document.getElementById('efort-result').style.display = 'block';
+  });
+
+  // ======= CHESTIONAR OBOSEALĂ =======
+  var obAnswers = {};
+  document.getElementById('oboseala-form').addEventListener('click', function(e) {
+    var chip = e.target.closest('[data-ob]');
+    if(!chip) return;
+    var q = chip.getAttribute('data-ob');
+    var val = parseInt(chip.getAttribute('data-val'));
+    // Deselect siblings
+    chip.parentElement.querySelectorAll('[data-ob]').forEach(function(c){c.classList.remove('sel');});
+    chip.classList.add('sel');
+    obAnswers[q] = val;
+  });
+
+  document.getElementById('btn-oboseala').addEventListener('click', function() {
+    var keys = ['q1','q2','q3','q4','q5','q6'];
+    var answered = 0, score = 0;
+    keys.forEach(function(k){ if(obAnswers[k] !== undefined) { answered++; score += obAnswers[k]; } });
+    if(answered < 6) { alert('Răspunde la toate cele 6 întrebări.'); return; }
+
+    var html = '';
+    if(score <= 1) {
+      html += '<div class="info-box"><strong>Efort normal (scor: '+score+'/6)</strong> — Clientul este în zona optimă. Oboseala este temporară și fiziologică. Se continuă programul cu perioade de refacere incluse și nutriție adecvată.</div>';
+    } else if(score <= 3) {
+      html += '<div class="warn-box"><strong>Suprasolicitare funcțională (scor: '+score+'/6)</strong> — Dezechilibru temporar între stres și recuperare. Recomandări: 2–6 zile pauză activă, creștere calorică (+200–300 kcal), accent pe somn (min 7.5h), suplimentare Mg + omega-3. Reducere intensitate cu 20–30% timp de 1 săptămână.</div>';
+    } else {
+      html += '<div class="danger-box"><strong>Risc de suprantrenament (scor: '+score+'/6)</strong> — Stare cronică de dezechilibru neuroendocrin și metabolic. Recomandări urgente: oprirea antrenamentelor intense 1–3 săptămâni, reverse dieting (creștere calorică treptată), reintroducere carbohidrați, somn înainte de 23:00, suplimentare: Mg bisglicinat seara + Rhodiola dimineața + omega-3. Se recomandă consultarea medicului sportiv.</div>';
+    }
+
+    html += '<div style="margin-top:12px"><p class="section-title" style="font-size:13px">Recomandări pe simptome:</p>';
+    if(obAnswers.q1) html += '<div class="result-row"><span class="result-label">Scădere performanță</span><span class="result-val">Săptămână ușoară (deload), reducere volume/intensitate</span></div>';
+    if(obAnswers.q2) html += '<div class="result-row"><span class="result-label">Lipsă motivație</span><span class="result-val">Obiective mici măsurabile, variare antrenamente, activități plăcute</span></div>';
+    if(obAnswers.q3) html += '<div class="result-row"><span class="result-label">Dureri persistente</span><span class="result-val">Somn 8h+, nutriție anti-inflamatorie (omega-3, turmeric), masaj, foam rolling</span></div>';
+    if(obAnswers.q4) html += '<div class="result-row"><span class="result-label">Tulburări somn</span><span class="result-val">Mg bisglicinat seara, fără ecrane 1h pre-somn, fără antrenamente seara târziu</span></div>';
+    if(obAnswers.q5) html += '<div class="result-row"><span class="result-label">Apetit haotic</span><span class="result-val">Reechilibrare alimentară, cină cu triptofan (curcan, ovăz, banane), reducere stres</span></div>';
+    if(obAnswers.q6) html += '<div class="result-row"><span class="result-label">Iritabilitate/concentrare</span><span class="result-val">Adaptogeni (Ashwagandha, Rhodiola), Mg, B-complex, omega-3, pauze planificate</span></div>';
+    html += '</div>';
+
+    document.getElementById('oboseala-detail').innerHTML = html;
+    document.getElementById('oboseala-result').style.display = 'block';
   });
 
   // Buget
