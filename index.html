@@ -177,6 +177,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div><label>Vârstă</label><input type="number" id="varsta" value="35" min="10" max="100"></div>
         <div><label>Sex</label><select id="sex"><option value="m">Masculin</option><option value="f">Feminin</option></select></div>
       </div>
+      <label>Nume client <span class="optional-label">(pentru raportul PDF)</span></label>
+      <input type="text" id="nume-client" placeholder="ex: Popescu Ion" autocomplete="off">
       <div class="row">
         <div><label>Greutate actuală (kg)</label><input type="number" id="greutate" value="95" step="0.1"></div>
         <div><label>Înălțime (cm)</label><input type="number" id="inaltime" value="175"></div>
@@ -285,6 +287,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div id="rmb-warn" class="warn-box" style="display:none"></div>
       <div id="rmb-ok" class="info-box" style="display:none"></div>
+    </div>
+
+    <!-- EXPORT PDF -->
+    <div class="card" id="export-card" style="display:none">
+      <div class="calc-btn" id="btn-export-pdf" role="button" tabindex="0" style="background:#2d6a3f">📄 Exportă raport PDF →</div>
+      <p class="note" style="text-align:center">PDF-ul se generează 100% local în browser. Zero date trimise online — conform GDPR.</p>
     </div>
   </div>
 
@@ -1168,6 +1176,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } else { warnEl.style.display='none'; okEl.style.display='none'; }
 
     document.getElementById('rez-energie').style.display = 'block';
+    document.getElementById('export-card').style.display = 'block';
 
     // ======= MACRONUTRIENȚI =======
     // PUNCT 2: Grăsimi individualizate pe obiectiv
@@ -1366,6 +1375,165 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('b-zi').textContent=(b/(30*p)).toFixed(1);
     document.getElementById('b-masa').textContent=(b/(30*p*3)).toFixed(1);
     document.getElementById('buget-result').style.display='block';
+  });
+});
+</script>
+<script>
+// ======= EXPORT PDF (nativ, fără dependențe externe) =======
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('btn-export-pdf').addEventListener('click', function() {
+    var numeClient = document.getElementById('nume-client').value || 'Nespecificat';
+    var dataGen = new Date().toLocaleDateString('ro-RO', {year:'numeric',month:'long',day:'numeric'});
+    var greutate = document.getElementById('greutate').value;
+    var inaltime = document.getElementById('inaltime').value;
+    var varsta = document.getElementById('varsta').value;
+    var sexVal = document.getElementById('sex').value;
+    var sex = sexVal === 'm' ? 'Masculin' : 'Feminin';
+    var activitate = document.getElementById('activitate').options[document.getElementById('activitate').selectedIndex].text;
+    var obiectiv = document.getElementById('obiectiv').options[document.getElementById('obiectiv').selectedIndex].text;
+    var talie = document.getElementById('talie').value || '';
+    var gat = document.getElementById('gat').value || '';
+
+    var imc = document.getElementById('r-imc').textContent;
+    var imcCat = document.getElementById('r-imc-cat').textContent;
+    var bf = document.getElementById('r-bf').textContent;
+    var bfCat = document.getElementById('r-bf-cat').textContent;
+    var lbm = document.getElementById('r-lbm').textContent;
+    var fatKg = document.getElementById('r-fat-kg').textContent;
+    var constit = document.getElementById('r-constit').textContent;
+    var whtr = document.getElementById('r-whtr').textContent;
+    var whtrCat = document.getElementById('r-whtr-cat').textContent;
+    var giRange = document.getElementById('r-gi-range').textContent;
+    var giAvg = document.getElementById('r-gi-avg').textContent;
+    var devineVal = document.getElementById('r-devine').textContent;
+    var lorentzVal = document.getElementById('r-lorentz').textContent;
+    var constitAdj = document.getElementById('r-constit-adj').textContent;
+    var dePierdut = document.getElementById('r-de-pierdut').textContent;
+    var rmbVal = document.getElementById('r-rmb').textContent;
+    var tdeeVal = document.getElementById('r-tdee').textContent;
+    var caloriiVal = document.getElementById('r-calorii').textContent;
+    var deficitVal = document.getElementById('r-deficit').textContent;
+    var slabireEst = document.getElementById('r-slabire-est').textContent;
+    var protVal = document.getElementById('m-prot').textContent;
+    var carbVal = document.getElementById('m-carb').textContent;
+    var grasVal = document.getElementById('m-gras').textContent;
+    var macroNota = document.getElementById('macro-nota').textContent;
+    var hBaza = document.getElementById('h-baza').textContent;
+    var hActiv = document.getElementById('h-activ').textContent;
+
+    function row(label, value, bold) {
+      return '<tr><td style="color:#666;padding:5px 8px;border-bottom:1px solid #eee;font-size:11px;width:45%">'+label+'</td><td style="padding:5px 8px;border-bottom:1px solid #eee;font-size:11px;text-align:right;font-weight:'+(bold?'700':'500')+'">'+value+'</td></tr>';
+    }
+    function section(title) {
+      return '<tr><td colspan="2" style="background:#f5f4f0;padding:7px 8px;font-weight:700;font-size:12px;color:#1a1a1a;letter-spacing:0.03em;border-bottom:2px solid #e0ddd5">'+title+'</td></tr>';
+    }
+    function note(text) {
+      return '<tr><td colspan="2" style="padding:4px 8px 8px;font-size:9px;color:#999;font-style:italic;line-height:1.5">'+text+'</td></tr>';
+    }
+
+    var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Raport Nutritional - '+numeClient+'</title>';
+    html += '<style>';
+    html += '*{margin:0;padding:0;box-sizing:border-box}';
+    html += 'body{font-family:Helvetica,Arial,sans-serif;color:#1a1a1a;background:#fff}';
+    html += '.page{max-width:700px;margin:0 auto;padding:20px 30px}';
+    html += 'table{width:100%;border-collapse:collapse;margin-bottom:8px}';
+    html += '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.no-print{display:none!important}@page{margin:10mm 12mm 15mm 12mm;size:A4}}';
+    html += '</style></head><body>';
+
+    // PRINT BUTTON (visible only on screen)
+    html += '<div class="no-print" style="text-align:center;padding:15px;background:#f5f4f0;border-bottom:1px solid #ddd">';
+    html += '<button onclick="window.print()" style="padding:12px 32px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer">Salvează ca PDF / Printează</button>';
+    html += '<p style="font-size:11px;color:#888;margin-top:6px">Alege "Salvare ca PDF" din dialogul de printare pentru a descărca raportul.</p>';
+    html += '</div>';
+
+    html += '<div class="page">';
+
+    // HEADER
+    html += '<div style="background:#1a1a1a;padding:16px 20px;border-radius:8px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start">';
+    html += '<div><div style="color:#fff;font-size:17px;font-weight:700">Calculator Nutritional Clinic</div>';
+    html += '<div style="color:#aaa;font-size:10px;margin-top:3px">Raport de evaluare nutritionala personalizata</div></div>';
+    html += '<div style="text-align:right"><div style="color:#ccc;font-size:10px">Data: '+dataGen+'</div>';
+    html += '<div style="color:#fff;font-size:12px;font-weight:600;margin-top:2px">'+numeClient+'</div></div>';
+    html += '</div>';
+
+    // TABLE
+    html += '<table>';
+
+    // DATE IDENTIFICARE
+    html += section('DATE DE IDENTIFICARE');
+    html += row('Nume client', numeClient, true);
+    html += row('Sex', sex);
+    html += row('Varsta', varsta+' ani');
+    html += row('Greutate actuala', greutate+' kg');
+    html += row('Inaltime', inaltime+' cm');
+    if(talie) html += row('Circumferinta talie', talie+' cm');
+    if(gat) html += row('Circumferinta gat', gat+' cm');
+    html += row('Nivel activitate', activitate);
+    html += row('Obiectiv', obiectiv);
+
+    // STATUS
+    html += section('STATUSUL ACTUAL');
+    html += row('IMC', imc+' — '+imcCat, true);
+    html += row('Body Fat % (CUN-BAE)', bf+' — '+bfCat, true);
+    html += row('Masa slaba (LBM)', lbm);
+    html += row('Masa grasa', fatKg);
+    html += row('Tip constitutional', constit);
+    if(whtr !== '\u2014' && whtr !== '—') html += row('Talie / Inaltime (WHtR)', whtr+' — '+whtrCat);
+    html += note('Body Fat: formula CUN-BAE (Gomez-Ambrosi et al. 2012, Univ. Navarra). WHtR: indicator risc cardiovascular.');
+
+    // OBIECTIV
+    html += section('OBIECTIVUL');
+    html += row('Interval greutate ideala', giRange+' kg', true);
+    html += row('Greutate ideala medie', giAvg+' kg');
+    html += row('Formula Devine', devineVal);
+    html += row('Formula Lorentz', lorentzVal);
+    html += row('Ajustare constitutionala', constitAdj);
+    html += row('Kg de pierdut (grasime)', dePierdut);
+    html += note('Greutate ideala = media Devine + Lorentz, ajustata constitutional, marja +/-5%.');
+
+    // ENERGIE
+    html += section('MOTORUL DE ENERGIE');
+    html += row('RMB (Mifflin-St. Jeor)', rmbVal+' kcal/zi', true);
+    html += row('TDEE', tdeeVal+' kcal/zi', true);
+    html += row('Calorii tinta', caloriiVal+' kcal/zi', true);
+    html += row('Deficit caloric aplicat', deficitVal);
+    html += row('Estimare pierdere/castig', slabireEst);
+    html += note('Nu se coboara niciodata sub RMB. Deficitul provine integral din carbohidrati — proteinele si grasimile sunt protejate.');
+
+    // MACRO
+    html += section('MACRONUTRIENTI');
+    html += row('Proteine', protVal, true);
+    html += row('Carbohidrati', carbVal, true);
+    html += row('Grasimi', grasVal, true);
+    if(macroNota) html += note(macroNota);
+
+    // HIDRATARE
+    html += section('HIDRATARE');
+    html += row('Necesar de baza', hBaza+' litri/zi');
+    html += row('Cu activitate fizica', hActiv+' litri/zi');
+    html += row('Supliment per ora sport', '+500–750 ml');
+
+    html += '</table>';
+
+    // FOOTER
+    html += '<div style="margin-top:16px;padding-top:10px;border-top:2px solid #e8e6e0;text-align:center">';
+    html += '<div style="font-size:11px;font-weight:600;color:#1a1a1a">Generat de Andrei Tataru, consultant nutritionist</div>';
+    html += '<div style="font-size:9px;color:#999;margin-top:3px">Metode de calcul: Mifflin-St. Jeor (RMB) | CUN-BAE (BF%) | Devine + Lorentz (Greutate Ideala) | WHtR (risc CV)</div>';
+    html += '<div style="font-size:9px;color:#999;margin-top:2px">100% GDPR — toate datele sunt procesate local in browser. Nicio informatie nu este transmisa sau stocata online.</div>';
+    html += '</div>';
+
+    html += '</div></body></html>';
+
+    // Deschide într-o fereastră nouă și lansează print
+    var printWin = window.open('', '_blank', 'width=800,height=900');
+    if(printWin) {
+      printWin.document.write(html);
+      printWin.document.close();
+      // Delay mic pentru randare completă
+      setTimeout(function(){ printWin.print(); }, 400);
+    } else {
+      alert('Browserul a blocat fereastra pop-up. Permite pop-up-urile pentru acest site și încearcă din nou.');
+    }
   });
 });
 </script>
