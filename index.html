@@ -1809,6 +1809,55 @@ document.addEventListener('DOMContentLoaded', function() {
 
     html += '</table>';
 
+    // ===== CONCLUZIE DINAMICĂ =====
+    html += '<div style="margin-top:16px;padding:16px 20px;background:#f5f4f0;border-radius:8px;border-left:4px solid #1a1a1a">';
+    html += '<div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em">Concluzie si recomandari</div>';
+
+    // Generare text concluzie pe baza datelor
+    var imcNum = parseFloat(imc);
+    var bfNum = parseFloat(bf);
+    var whtrNum = parseFloat(whtr) || 0;
+    var obiectivSel = document.getElementById('obiectiv').value;
+    var caloriiNum = parseFloat(caloriiVal);
+    var rmbNum = parseFloat(rmbVal);
+
+    // Paragraf 1: Profil general
+    var p1 = '';
+    if(imcNum < 18.5) {
+      p1 = 'Profilul nutritional indica o greutate sub limita optima (IMC ' + imc + ' — subponderal). Compozitia corporala necesita atentie pentru cresterea masei musculare si atingerea unui echilibru sanatos.';
+    } else if(imcNum < 25 && bfNum < (sexVal === 'm' ? 18 : 25)) {
+      p1 = 'Profilul nutritional este optim, cu o greutate stabila si un risc metabolic redus. Compozitia corporala se incadreaza in limite sanatoase' + (bfNum < (sexVal === 'm' ? 14 : 21) ? ', cu un nivel atletic al grasimii corporale.' : ', cu potential de rafinare pentru o definire musculara mai buna.');
+    } else if(imcNum < 25) {
+      p1 = 'Greutatea se incadreaza in limite normale (IMC ' + imc + '), insa procentul de grasime corporala (' + bf + ') sugereaza un potential de imbunatatire a compozitiei corporale prin recompozitie — cresterea masei musculare simultan cu reducerea tesutului adipos.';
+    } else if(imcNum < 30) {
+      p1 = 'Profilul indica supraponderalitate (IMC ' + imc + ') cu un procent de grasime corporala de ' + bf + '. Reducerea graduala a tesutului adipos este recomandata, cu accent pe protejarea masei musculare existente si evitarea deficitelor calorice agresive.';
+    } else {
+      p1 = 'Profilul indica un grad de obezitate (IMC ' + imc + ') cu un procent de grasime corporala de ' + bf + '. Se recomanda o abordare progresiva si sustinuta de reducere a greutatii, sub monitorizare, cu accent pe sanatatea metabolica si nu doar pe cifra de pe cantar.';
+    }
+
+    // WHtR warning
+    if(whtrNum >= 0.5) {
+      p1 += ' Raportul talie/inaltime (' + whtr + ') indica un risc cardiovascular crescut — reducerea circumferintei taliei este un obiectiv prioritar.';
+    }
+
+    // Paragraf 2: Recomandări pe obiectiv
+    var p2 = '';
+    if(obiectivSel === 'mentinere') {
+      p2 = 'Se recomanda mentinerea aportului caloric actual (' + caloriiVal + ' kcal/zi), cu un accent pe calitatea alimentelor, diversitatea surselor de proteine si introducerea sau mentinerea activitatii fizice regulate, in vederea sustinerii unei compozitii corporale optime.';
+    } else if(obiectivSel === 'surplus') {
+      p2 = 'Pentru obiectivul de crestere a masei musculare, surplusul caloric de +300 kcal (' + caloriiVal + ' kcal/zi) trebuie insotit obligatoriu de antrenament de rezistenta progresiv si un aport proteic adecvat calculat pe greutatea ideala. Se monitorizeaza lunar compozitia corporala pentru a evita acumularea excesiva de tesut adipos.';
+    } else {
+      p2 = 'Deficitul caloric aplicat (' + deficitVal + ') asigura o scadere progresiva si realista. Proteinele si grasimile minime esentiale sunt protejate — deficitul provine integral din carbohidrati. Nu se coboara niciodata sub rata metabolica bazala (' + rmbVal + ' kcal/zi) pentru a proteja masa musculara, functia tiroidiana si metabolismul pe termen lung.';
+    }
+
+    // Paragraf 3: Monitorizare
+    var p3 = 'Monitorizarea periodica este indicata pentru ajustari fine si optimizarea rezultatelor pe termen mediu si lung. Se recomanda reevaluarea compozitiei corporale la fiecare 4–6 saptamani si ajustarea planului nutritional in functie de progresul real, starea de sanatate si feedback-ul subiectiv al clientului.';
+
+    html += '<div style="font-size:11px;color:#333;line-height:1.7;margin-bottom:8px">'+p1+'</div>';
+    html += '<div style="font-size:11px;color:#333;line-height:1.7;margin-bottom:8px">'+p2+'</div>';
+    html += '<div style="font-size:11px;color:#333;line-height:1.7">'+p3+'</div>';
+    html += '</div>';
+
     // FOOTER
     html += '<div style="margin-top:16px;padding-top:10px;border-top:2px solid #e8e6e0;text-align:center">';
     html += '<div style="font-size:11px;font-weight:600;color:#1a1a1a">Generat de Andrei Tataru, consultant nutritionist</div>';
