@@ -349,11 +349,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
       </div>
       <div class="result-row"><span class="result-label">Regulă generală</span><span class="result-val">35 ml/kg greutate ideală</span></div>
+      <div class="result-row"><span class="result-label">Surse incluse</span><span class="result-val">Apă, ceai neîndulcit, cafea neagră (în moderație), supe, alimente bogate în apă</span></div>
       <div class="result-row"><span class="result-label">Supliment per oră sport</span><span class="result-val">+500–750 ml</span></div>
       <div class="result-row"><span class="result-label">Indicatori hidratare OK</span><span class="result-val">Urină galben pal</span></div>
       <div class="result-row" style="padding-top:10px;padding-bottom:10px">
         <span class="result-label">Cafea / ceai</span>
-        <span class="result-val" style="font-size:13px;font-weight:400">Contorizat parțial.<br><span style="color:#b45309">A nu se consuma după ora 14:00 — cofeina interferează cu somnul și recuperarea.</span></span>
+        <span class="result-val" style="font-size:13px;font-weight:400">Contribuie la necesarul hidric, dar nu înlocuiesc apa.<br><span style="color:#b45309">Max 2–3 cești/zi. A nu se consuma după ora 14:00 — cofeina interferează cu somnul și recuperarea.</span></span>
       </div>
       <p class="note">Necesarul crește în vreme caldă, sarcină/alăptare și boli febrile.</p>
     </div>
@@ -1288,6 +1289,10 @@ document.addEventListener('DOMContentLoaded', function() {
         whtrAlert.className = whtr >= 0.6 ? 'danger-box' : 'warn-box';
         whtrAlert.innerHTML = '⚠️ <strong>Atenție:</strong> Raportul talie/înălțime este ' + whtr.toFixed(3) + ' (optim &lt; 0.50). Indicator corelat cu risc cardiovascular crescut, rezistență la insulină și sindrom metabolic.';
         whtrAlert.style.display = 'block';
+      } else if(whtr >= 0.45) {
+        whtrAlert.className = 'info-box';
+        whtrAlert.innerHTML = '📌 Raportul talie/înălțime este ' + whtr.toFixed(3) + ' — în limite, dar aproape de pragul de risc (0.50). Optimizarea acestui raport prin reducerea circumferinței taliei va reduce semnificativ riscul metabolic pe termen lung.';
+        whtrAlert.style.display = 'block';
       } else { whtrAlert.style.display = 'none'; }
     } else {
       document.getElementById('r-whtr').textContent = '—';
@@ -1417,7 +1422,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('m-carb').textContent = carb+'g ('+Math.round(carbKcal)+' kcal)';
     document.getElementById('m-gras').textContent = gras+'g ('+Math.round(grasKcal)+' kcal) — '+grasLabel;
 
-    var macroNotaText = 'Proteine calculate pe greutatea ideală ('+giAdjusted.toFixed(1)+' kg), factor '+factorProt.toFixed(1)+'g/kg, profil '+actLabel+'. Grăsimi: '+grasLabel+'. Deficitul caloric (dacă există) provine integral din carbohidrați — proteinele și grăsimile minime sunt protejate.';
+    var macroNotaText = 'Proteine calculate pe greutatea ideală ('+giAdjusted.toFixed(1)+' kg), factor '+factorProt.toFixed(1)+'g/kg, profil '+actLabel+'. Grăsimi: '+grasLabel+'. Deficitul caloric (dacă există) provine integral din carbohidrați — proteinele și grăsimile minime sunt protejate. Carbohidrații ('+carb+'g) trebuie să provină preponderent din surse complexe (cereale integrale, leguminoase, legume) — minim 25–30g fibre/zi pentru stabilitatea glicemiei și sațietate.';
     if(grasAjustat) {
       macroNotaText += ' Grăsimile au fost ridicate de la '+Math.round(calorii*grasPct/9)+'g la '+gras+'g (min '+(sex==='f'?'0.8':'0.7')+' g/kg) pentru a proteja sănătatea hormonală'+(sex==='f'?' (ciclu menstrual, estrogen, piele, păr)':' (testosteron, funcție tiroidienă)')+'.';
     }
