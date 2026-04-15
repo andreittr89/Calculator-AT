@@ -200,9 +200,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <label>Tip constituțional <span class="optional-label">(testul încheieturii)</span></label>
         <p style="font-size:12px;color:#888;margin-bottom:6px">Poți cupri încheietura mâinii cu degetul mare și arătătorul?</p>
         <div class="constit-opts" id="constit-wrap">
-          <div class="constit-opt" data-constit="ecto"><span class="co-icon">🦴</span><span class="co-label">Se suprapun<br><strong>Ectomorf</strong></span></div>
-          <div class="constit-opt" data-constit="mezo"><span class="co-icon">💪</span><span class="co-label">Se ating fix<br><strong>Mezomorf</strong></span></div>
-          <div class="constit-opt" data-constit="endo"><span class="co-icon">🏋️</span><span class="co-label">Nu se ating<br><strong>Endomorf</strong></span></div>
+          <div class="constit-opt" data-constit="ecto"><span class="co-icon">🦴</span><span class="co-label">Se suprapun<br><strong>Structură fină</strong></span></div>
+          <div class="constit-opt" data-constit="mezo"><span class="co-icon">💪</span><span class="co-label">Se ating fix<br><strong>Structură medie</strong></span></div>
+          <div class="constit-opt" data-constit="endo"><span class="co-icon">🏋️</span><span class="co-label">Nu se ating<br><strong>Structură robustă</strong></span></div>
         </div>
       </div>
 
@@ -237,7 +237,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div id="bf-viz" style="display:none;margin-top:12px">
         <p style="font-size:12px;color:#666;margin-bottom:2px">Grăsime corporală (CUN-BAE Formula)</p>
         <div class="bf-bar"><div class="bf-marker" id="bf-marker"></div></div>
-        <div class="bf-labels"><span>Esențial</span><span>Atletic</span><span>Fitness</span><span>Mediu</span><span>Obez</span></div>
+        <div class="bf-labels"><span>Esențial</span><span>Atletic</span><span>Fitness</span><span>Mediu</span><span>Peste optim</span></div>
       </div>
 
       <div id="whtr-viz" style="display:none;margin-top:12px">
@@ -287,6 +287,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div id="rmb-warn" class="warn-box" style="display:none"></div>
       <div id="rmb-ok" class="info-box" style="display:none"></div>
+      <div id="miscare-rec" style="display:none;margin-top:10px"></div>
     </div>
 
     <!-- EXPORT PDF -->
@@ -1189,16 +1190,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var constitAdj = 0;
     var constitLabel = 'Nespecificat';
-    if(selectedConstit === 'ecto') { constitAdj = -0.05; constitLabel = 'Ectomorf (oase subțiri)'; }
-    else if(selectedConstit === 'mezo') { constitAdj = 0; constitLabel = 'Mezomorf (mediu)'; }
-    else if(selectedConstit === 'endo') { constitAdj = 0.05; constitLabel = 'Endomorf (robustă)'; }
+    if(selectedConstit === 'ecto') { constitAdj = -0.05; constitLabel = 'Structură fină (oase subțiri)'; }
+    else if(selectedConstit === 'mezo') { constitAdj = 0; constitLabel = 'Structură medie'; }
+    else if(selectedConstit === 'endo') { constitAdj = 0.05; constitLabel = 'Structură robustă'; }
     var giAdjusted = giAvg * (1 + constitAdj);
     var giLow = Math.round(giAdjusted * 0.95 * 10) / 10;
     var giHigh = Math.round(giAdjusted * 1.05 * 10) / 10;
 
     // ======= IMC =======
     var imc = g / ((h/100) * (h/100));
-    var imcCat = imc<18.5 ? 'Subponderal' : imc<25 ? 'Normal' : imc<30 ? 'Supraponderal' : 'Obezitate';
+    var imcCat = imc<18.5 ? 'Subponderal' : imc<25 ? 'Normal' : imc<30 ? 'Supraponderal' : 'Nivel crescut';
 
     // ======= BODY FAT: CUN-BAE Formula =======
     // BF% = -44.988 + (0.503 × vârstă) + (10.689 × sex) + (3.172 × IMC)
@@ -1218,13 +1219,13 @@ document.addEventListener('DOMContentLoaded', function() {
       else if(bf < 14) bfCat = 'Atletic';
       else if(bf < 18) bfCat = 'Fitness';
       else if(bf < 25) bfCat = 'Mediu';
-      else bfCat = 'Obez';
+      else bfCat = 'Peste intervalul optim';
     } else {
       if(bf < 14) bfCat = 'Esențial';
       else if(bf < 21) bfCat = 'Atletic';
       else if(bf < 25) bfCat = 'Fitness';
       else if(bf < 32) bfCat = 'Mediu';
-      else bfCat = 'Obez';
+      else bfCat = 'Peste intervalul optim';
     }
 
     // LBM & Masa grasă
@@ -1330,7 +1331,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if(obj.startsWith('slabire')) {
       var weeklyLoss = (tdee * deficitPct * 7) / 7700;
-      document.getElementById('r-slabire-est').textContent = '~' + weeklyLoss.toFixed(2) + ' kg/săpt.';
+      var wlLow = Math.max(weeklyLoss - 0.08, 0.1);
+      var wlHigh = weeklyLoss + 0.12;
+      document.getElementById('r-slabire-est').textContent = '~' + wlLow.toFixed(2) + '–' + wlHigh.toFixed(2) + ' kg/săpt. în medie';
     } else if(obj==='surplus') {
       document.getElementById('r-slabire-est').textContent = 'Creștere ~0.25–0.5 kg/săpt.';
     } else {
@@ -1349,6 +1352,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('rez-energie').style.display = 'block';
     document.getElementById('export-card').style.display = 'block';
+
+    // ======= RECOMANDARE MIȘCARE =======
+    var miscareEl = document.getElementById('miscare-rec');
+    if(act <= 1.375) {
+      var miscareText = '<strong>Recomandare activitate fizică:</strong> ';
+      if(act <= 1.2) {
+        miscareText += 'Profilul indică un nivel sedentar. Pentru rezultate reale și sănătate pe termen lung, se recomandă: mers zilnic minim 6.000–8.000 de pași + 2–3 antrenamente/săptămână (forță sau mixt). Activitatea fizică crește TDEE-ul, protejează masa musculară și îmbunătățește sensibilitatea la insulină.';
+      } else {
+        miscareText += 'Nivelul de activitate este ușor. Pentru optimizarea compoziției corporale se recomandă: creșterea la minim 8.000 pași/zi + 3 antrenamente/săptămână. Combinația forță + cardio moderat produce cele mai bune rezultate pe termen lung.';
+      }
+      if(obj.startsWith('slabire')) {
+        miscareText += ' La slăbire, mișcarea previne pierderea de masă musculară, crește sațietatea și susține aderența la plan.';
+      }
+      miscareEl.className = 'info-box';
+      miscareEl.innerHTML = '🚶 ' + miscareText;
+      miscareEl.style.display = 'block';
+    } else {
+      miscareEl.style.display = 'none';
+    }
 
     // ======= MACRONUTRIENȚI =======
     // PUNCT 2: Grăsimi individualizate pe obiectiv
@@ -1391,7 +1413,7 @@ document.addEventListener('DOMContentLoaded', function() {
       grasLabel = grasPctReal + '% (ajustat la min ' + (sex==='f'?'0.8':'0.7') + ' g/kg — sănătate hormonală)';
     }
 
-    document.getElementById('m-prot').textContent = prot+'g ('+Math.round(protKcal)+' kcal) — '+factorProt.toFixed(1)+'g/kg gr. ideală';
+    document.getElementById('m-prot').textContent = prot+'g ('+Math.round(protKcal)+' kcal) — '+factorProt.toFixed(1)+'g × '+giAdjusted.toFixed(1)+' kg (gr. ideală)';
     document.getElementById('m-carb').textContent = carb+'g ('+Math.round(carbKcal)+' kcal)';
     document.getElementById('m-gras').textContent = gras+'g ('+Math.round(grasKcal)+' kcal) — '+grasLabel;
 
@@ -1839,11 +1861,18 @@ document.addEventListener('DOMContentLoaded', function() {
       p2 = 'Deficitul caloric aplicat asigura o scadere progresiva si realista. Proteinele si grasimile minime esentiale sunt protejate. Nu se coboara niciodata sub rata metabolica bazala pentru a proteja masa musculara, functia tiroidiana si metabolismul pe termen lung.';
     }
 
-    var p3 = 'Monitorizarea periodica este indicata pentru ajustari fine si optimizarea rezultatelor pe termen mediu si lung. Se recomanda reevaluarea compozitiei corporale la fiecare 4–6 saptamani si ajustarea planului nutritional in functie de progresul real, starea de sanatate si feedback-ul subiectiv al clientului.';
+    var p3 = '';
+    var actPdf = parseFloat(document.getElementById('activitate').value);
+    if(actPdf <= 1.375) {
+      p3 = 'Se recomanda introducerea activitatii fizice regulate: mers zilnic minim 6.000–8.000 de pasi si 2–3 antrenamente pe saptamana. Miscarea protejeaza masa musculara, creste satierea si imbunatateste sensibilitatea la insulina — componente esentiale pentru rezultate sustenabile.';
+    }
+
+    var p4 = 'Monitorizarea periodica este indicata pentru ajustari fine si optimizarea rezultatelor pe termen mediu si lung. Se recomanda reevaluarea compozitiei corporale la fiecare 4–6 saptamani si ajustarea planului nutritional in functie de progresul real, starea de sanatate si feedback-ul subiectiv al clientului.';
 
     html += '<div style="font-size:11px;color:#333;line-height:1.7;margin-bottom:8px">'+p1+'</div>';
     html += '<div style="font-size:11px;color:#333;line-height:1.7;margin-bottom:8px">'+p2+'</div>';
-    html += '<div style="font-size:11px;color:#333;line-height:1.7">'+p3+'</div>';
+    if(p3) html += '<div style="font-size:11px;color:#333;line-height:1.7;margin-bottom:8px">'+p3+'</div>';
+    html += '<div style="font-size:11px;color:#333;line-height:1.7">'+p4+'</div>';
     html += '</div>';
 
     // FOOTER
@@ -1855,14 +1884,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
     html += '</div></body></html>';
 
-    // Deschide raportul și lansează Save as PDF
-    var printWin = window.open('', '_blank', 'width=800,height=900');
-    if(printWin) {
+    // Cross-platform: încearcă window.open, fallback pe overlay în aceeași pagină
+    var printWin = window.open('', '_blank');
+    if(printWin && !printWin.closed) {
       printWin.document.write(html);
       printWin.document.close();
-      setTimeout(function(){ printWin.print(); }, 500);
     } else {
-      alert('Permite pop-up-urile pentru acest site si incearca din nou.');
+      // Fallback mobil: overlay pe pagina curentă
+      var overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:#fff;overflow-y:auto';
+      var toolbar = document.createElement('div');
+      toolbar.style.cssText = 'position:sticky;top:0;z-index:100000;background:#f5f4f0;padding:12px;text-align:center;border-bottom:1px solid #ddd;display:flex;gap:8px;justify-content:center';
+      var btnPrint = document.createElement('button');
+      btnPrint.textContent = 'Printeaza / Salveaza PDF';
+      btnPrint.style.cssText = 'padding:10px 20px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer';
+      btnPrint.onclick = function(){ window.print(); };
+      var btnBack = document.createElement('button');
+      btnBack.textContent = 'Inapoi la calculator';
+      btnBack.style.cssText = 'padding:10px 20px;background:#fff;color:#1a1a1a;border:1px solid #ddd;border-radius:8px;font-size:14px;cursor:pointer';
+      btnBack.onclick = function(){ document.body.removeChild(overlay); };
+      toolbar.appendChild(btnPrint);
+      toolbar.appendChild(btnBack);
+      var content = document.createElement('div');
+      content.innerHTML = html.replace(/<!DOCTYPE html>.*?<body>/s, '').replace(/<\/body>.*$/s, '').replace(/<div class="no-print".*?<\/div>/s, '');
+      overlay.appendChild(toolbar);
+      overlay.appendChild(content);
+      document.body.appendChild(overlay);
     }
   });
 });
