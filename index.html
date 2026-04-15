@@ -291,8 +291,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <!-- EXPORT PDF -->
     <div class="card" id="export-card" style="display:none">
-      <div class="calc-btn" id="btn-export-pdf" role="button" tabindex="0" style="background:#2d6a3f">📄 Exportă raport PDF →</div>
-      <p class="note" style="text-align:center">PDF-ul se generează 100% local în browser. Zero date trimise online — conform GDPR.</p>
+      <div class="calc-btn" id="btn-export-pdf" role="button" tabindex="0" style="background:#2d6a3f">📄 Salvează raport PDF →</div>
+      <p class="note" style="text-align:center">PDF-ul se generează și se salvează local. Zero date trimise online — conform GDPR.</p>
     </div>
   </div>
 
@@ -1361,6 +1361,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var protKcal = prot * 4;
 
     // Grăsimi individualizate: slăbire 20-25%, menținere 25-30%, surplus 28-32%
+    // + FLOOR PE SEX: minim 0.8 g/kg corp la femei, 0.7 g/kg corp la bărbați (sănătate hormonală)
     var grasPct;
     if(obj.startsWith('slabire')) { grasPct = 0.22; }
     else if(obj==='surplus') { grasPct = 0.30; }
@@ -1369,18 +1370,36 @@ document.addEventListener('DOMContentLoaded', function() {
     var grasKcal = Math.round(calorii * grasPct);
     var gras = Math.round(grasKcal / 9);
 
+    // Floor grăsimi: minim esențial pentru sănătatea hormonală
+    var grasFloor = sex === 'f' ? Math.ceil(g * 0.8) : Math.ceil(g * 0.7);
+    var grasAjustat = false;
+    if(gras < grasFloor) {
+      gras = grasFloor;
+      grasKcal = gras * 9;
+      grasAjustat = true;
+    }
+
     // PUNCT 3: Slăbire inteligentă — deficitul vine din carbohidrați, proteinele rămân protejate
     var carbKcal = Math.round(calorii - protKcal - grasKcal);
     if(carbKcal < 0) carbKcal = 0;
     var carb = Math.round(carbKcal / 4);
 
     var actLabel = act<=1.2?'sedentar':act<=1.375?'ușor activ':act<=1.55?'moderat activ':act<=1.725?'foarte activ':'extrem de activ';
-    var grasLabel = obj.startsWith('slabire') ? '22% (slăbire — minim grăsimi esențiale)' : obj==='surplus' ? '30% (surplus — suport hormonal)' : '27% (menținere)';
+    var grasPctReal = Math.round(grasKcal / calorii * 100);
+    var grasLabel = obj.startsWith('slabire') ? '22% (slăbire)' : obj==='surplus' ? '30% (surplus)' : '27% (menținere)';
+    if(grasAjustat) {
+      grasLabel = grasPctReal + '% (ajustat la min ' + (sex==='f'?'0.8':'0.7') + ' g/kg — sănătate hormonală)';
+    }
 
     document.getElementById('m-prot').textContent = prot+'g ('+Math.round(protKcal)+' kcal) — '+factorProt.toFixed(1)+'g/kg gr. ideală';
     document.getElementById('m-carb').textContent = carb+'g ('+Math.round(carbKcal)+' kcal)';
     document.getElementById('m-gras').textContent = gras+'g ('+Math.round(grasKcal)+' kcal) — '+grasLabel;
-    document.getElementById('macro-nota').textContent = 'Proteine calculate pe greutatea ideală ('+giAdjusted.toFixed(1)+' kg), factor '+factorProt.toFixed(1)+'g/kg, profil '+actLabel+'. Grăsimi: '+grasLabel+'. Deficitul caloric (dacă există) provine integral din carbohidrați — proteinele și grăsimile minime sunt protejate.';
+
+    var macroNotaText = 'Proteine calculate pe greutatea ideală ('+giAdjusted.toFixed(1)+' kg), factor '+factorProt.toFixed(1)+'g/kg, profil '+actLabel+'. Grăsimi: '+grasLabel+'. Deficitul caloric (dacă există) provine integral din carbohidrați — proteinele și grăsimile minime sunt protejate.';
+    if(grasAjustat) {
+      macroNotaText += ' Grăsimile au fost ridicate de la '+Math.round(calorii*grasPct/9)+'g la '+gras+'g (min '+(sex==='f'?'0.8':'0.7')+' g/kg) pentru a proteja sănătatea hormonală'+(sex==='f'?' (ciclu menstrual, estrogen, piele, păr)':' (testosteron, funcție tiroidienă)')+'.';
+    }
+    document.getElementById('macro-nota').textContent = macroNotaText;
     document.getElementById('macro-content').style.display = 'block';
     document.getElementById('macro-nedisponibil').style.display = 'none';
 
@@ -1673,7 +1692,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <script>
-// ======= EXPORT PDF (nativ, fără dependențe externe) =======
+// ======= SALVARE PDF (fără formule, format buletin clinic, descărcare directă) =======
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('btn-export-pdf').addEventListener('click', function() {
     var numeClient = document.getElementById('nume-client').value || 'Nespecificat';
@@ -1699,9 +1718,6 @@ document.addEventListener('DOMContentLoaded', function() {
     var whtrCat = document.getElementById('r-whtr-cat').textContent;
     var giRange = document.getElementById('r-gi-range').textContent;
     var giAvg = document.getElementById('r-gi-avg').textContent;
-    var devineVal = document.getElementById('r-devine').textContent;
-    var lorentzVal = document.getElementById('r-lorentz').textContent;
-    var constitAdj = document.getElementById('r-constit-adj').textContent;
     var dePierdut = document.getElementById('r-de-pierdut').textContent;
     var rmbVal = document.getElementById('r-rmb').textContent;
     var tdeeVal = document.getElementById('r-tdee').textContent;
@@ -1711,146 +1727,123 @@ document.addEventListener('DOMContentLoaded', function() {
     var protVal = document.getElementById('m-prot').textContent;
     var carbVal = document.getElementById('m-carb').textContent;
     var grasVal = document.getElementById('m-gras').textContent;
-    var macroNota = document.getElementById('macro-nota').textContent;
     var hBaza = document.getElementById('h-baza').textContent;
     var hActiv = document.getElementById('h-activ').textContent;
 
-    function row(label, value, bold) {
-      return '<tr><td style="color:#666;padding:5px 8px;border-bottom:1px solid #eee;font-size:11px;width:45%">'+label+'</td><td style="padding:5px 8px;border-bottom:1px solid #eee;font-size:11px;text-align:right;font-weight:'+(bold?'700':'500')+'">'+value+'</td></tr>';
+    // Intervale de referință (format buletin)
+    var imcRef = '18.5 – 24.9';
+    var bfRef = sexVal === 'm' ? '10 – 20%' : '18 – 28%';
+    var whtrRef = '< 0.50';
+
+    function row(label, value, refRange, bold) {
+      var refHtml = refRange ? '<span style="color:#888;font-size:9px;display:block;margin-top:1px">Interval normal: '+refRange+'</span>' : '';
+      return '<tr><td style="color:#555;padding:6px 10px;border-bottom:1px solid #eee;font-size:11px;width:40%">'+label+'</td><td style="padding:6px 10px;border-bottom:1px solid #eee;font-size:11px;text-align:right;font-weight:'+(bold?'700':'500')+'">'+value+refHtml+'</td></tr>';
     }
     function section(title) {
-      return '<tr><td colspan="2" style="background:#f5f4f0;padding:7px 8px;font-weight:700;font-size:12px;color:#1a1a1a;letter-spacing:0.03em;border-bottom:2px solid #e0ddd5">'+title+'</td></tr>';
-    }
-    function note(text) {
-      return '<tr><td colspan="2" style="padding:4px 8px 8px;font-size:9px;color:#999;font-style:italic;line-height:1.5">'+text+'</td></tr>';
+      return '<tr><td colspan="2" style="background:#f5f4f0;padding:8px 10px;font-weight:700;font-size:12px;color:#1a1a1a;letter-spacing:0.03em;border-bottom:2px solid #ddd">'+title+'</td></tr>';
     }
 
     var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Raport Nutritional - '+numeClient+'</title>';
-    html += '<style>';
-    html += '*{margin:0;padding:0;box-sizing:border-box}';
-    html += 'body{font-family:Helvetica,Arial,sans-serif;color:#1a1a1a;background:#fff}';
-    html += '.page{max-width:700px;margin:0 auto;padding:20px 30px}';
-    html += 'table{width:100%;border-collapse:collapse;margin-bottom:8px}';
-    html += '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.no-print{display:none!important}@page{margin:10mm 12mm 15mm 12mm;size:A4}}';
-    html += '</style></head><body>';
+    html += '<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Helvetica,Arial,sans-serif;color:#1a1a1a;background:#fff}.page{max-width:700px;margin:0 auto;padding:20px 30px}table{width:100%;border-collapse:collapse;margin-bottom:8px}';
+    html += '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.no-print{display:none!important}@page{margin:10mm 12mm 15mm 12mm;size:A4}}</style></head><body>';
 
-    // PRINT BUTTON (visible only on screen)
+    // Toolbar (vizibil doar pe ecran)
     html += '<div class="no-print" style="text-align:center;padding:15px;background:#f5f4f0;border-bottom:1px solid #ddd">';
-    html += '<button onclick="window.print()" style="padding:12px 32px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer">Salvează ca PDF / Printează</button>';
-    html += '<p style="font-size:11px;color:#888;margin-top:6px">Alege "Salvare ca PDF" din dialogul de printare pentru a descărca raportul.</p>';
-    html += '</div>';
+    html += '<button onclick="window.print()" style="padding:12px 24px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;margin-right:8px">Printeaza</button>';
+    html += '<p style="font-size:11px;color:#888;margin-top:6px">Fisierul a fost salvat automat. Poti si printa de aici daca doresti.</p></div>';
 
     html += '<div class="page">';
 
     // HEADER
     html += '<div style="background:#1a1a1a;padding:16px 20px;border-radius:8px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start">';
-    html += '<div><div style="color:#fff;font-size:17px;font-weight:700">Calculator Nutritional Clinic</div>';
-    html += '<div style="color:#aaa;font-size:10px;margin-top:3px">Raport de evaluare nutritionala personalizata</div></div>';
-    html += '<div style="text-align:right"><div style="color:#ccc;font-size:10px">Data: '+dataGen+'</div>';
-    html += '<div style="color:#fff;font-size:12px;font-weight:600;margin-top:2px">'+numeClient+'</div></div>';
-    html += '</div>';
+    html += '<div><div style="color:#fff;font-size:17px;font-weight:700">Raport de Evaluare Nutritionala</div>';
+    html += '<div style="color:#aaa;font-size:10px;margin-top:3px">Evaluare personalizata a compozitiei corporale si a necesarului nutritional</div></div>';
+    html += '<div style="text-align:right"><div style="color:#ccc;font-size:10px">Data evaluarii: '+dataGen+'</div>';
+    html += '<div style="color:#fff;font-size:12px;font-weight:600;margin-top:2px">'+numeClient+'</div></div></div>';
 
-    // TABLE
     html += '<table>';
 
-    // DATE IDENTIFICARE
-    html += section('DATE DE IDENTIFICARE');
-    html += row('Nume client', numeClient, true);
+    // DATE CLIENT
+    html += section('DATE CLIENT');
+    html += row('Nume', numeClient, '', true);
     html += row('Sex', sex);
     html += row('Varsta', varsta+' ani');
-    html += row('Greutate actuala', greutate+' kg');
+    html += row('Greutate', greutate+' kg');
     html += row('Inaltime', inaltime+' cm');
     if(talie) html += row('Circumferinta talie', talie+' cm');
-    if(gat) html += row('Circumferinta gat', gat+' cm');
     html += row('Nivel activitate', activitate);
-    html += row('Obiectiv', obiectiv);
+    html += row('Obiectiv stabilit', obiectiv);
 
-    // STATUS
-    html += section('STATUSUL ACTUAL');
-    html += row('IMC', imc+' — '+imcCat, true);
-    html += row('Body Fat % (CUN-BAE)', bf+' — '+bfCat, true);
-    html += row('Masa slaba (LBM)', lbm);
+    // COMPOZITIE CORPORALA
+    html += section('COMPOZITIE CORPORALA');
+    html += row('Indice de masa corporala (IMC)', imc+' — '+imcCat, imcRef, true);
+    html += row('Grasime corporala', bf+' — '+bfCat, bfRef, true);
+    html += row('Masa slaba', lbm);
     html += row('Masa grasa', fatKg);
     html += row('Tip constitutional', constit);
-    if(whtr !== '\u2014' && whtr !== '—') html += row('Talie / Inaltime (WHtR)', whtr+' — '+whtrCat);
-    html += note('Body Fat: formula CUN-BAE (Gomez-Ambrosi et al. 2012, Univ. Navarra). WHtR: indicator risc cardiovascular.');
+    if(whtr !== '\u2014' && whtr !== '—') html += row('Raport talie / inaltime', whtr+' — '+whtrCat, whtrRef);
 
-    // OBIECTIV
-    html += section('OBIECTIVUL');
-    html += row('Interval greutate ideala', giRange+' kg', true);
-    html += row('Greutate ideala medie', giAvg+' kg');
-    html += row('Formula Devine', devineVal);
-    html += row('Formula Lorentz', lorentzVal);
-    html += row('Ajustare constitutionala', constitAdj);
-    html += row('Kg de pierdut (grasime)', dePierdut);
-    html += note('Greutate ideala = media Devine + Lorentz, ajustata constitutional, marja +/-5%.');
+    // GREUTATE TINTA
+    html += section('GREUTATE TINTA');
+    html += row('Interval greutate optima', giRange+' kg', '', true);
+    html += row('Greutate tinta medie', giAvg+' kg');
+    html += row('Diferenta fata de actual', dePierdut);
 
-    // ENERGIE
-    html += section('MOTORUL DE ENERGIE');
-    html += row('RMB (Mifflin-St. Jeor)', rmbVal+' kcal/zi', true);
-    html += row('TDEE', tdeeVal+' kcal/zi', true);
-    html += row('Calorii tinta', caloriiVal+' kcal/zi', true);
-    html += row('Deficit caloric aplicat', deficitVal);
-    html += row('Estimare pierdere/castig', slabireEst);
-    html += note('Nu se coboara niciodata sub RMB. Deficitul provine integral din carbohidrati — proteinele si grasimile sunt protejate.');
+    // NECESAR ENERGETIC
+    html += section('NECESAR ENERGETIC ZILNIC');
+    html += row('Metabolism bazal (RMB)', rmbVal+' kcal/zi', '', true);
+    html += row('Consum total zilnic (TDEE)', tdeeVal+' kcal/zi', '', true);
+    html += row('Calorii recomandate', caloriiVal+' kcal/zi', '', true);
+    html += row('Strategie aplicata', deficitVal);
+    html += row('Estimare progres', slabireEst);
 
-    // MACRO
-    html += section('MACRONUTRIENTI');
-    html += row('Proteine', protVal, true);
-    html += row('Carbohidrati', carbVal, true);
-    html += row('Grasimi', grasVal, true);
-    if(macroNota) html += note(macroNota);
+    // PLAN MACRONUTRIENTI
+    html += section('PLAN MACRONUTRIENTI');
+    html += row('Proteine', protVal, '', true);
+    html += row('Carbohidrati', carbVal, '', true);
+    html += row('Grasimi', grasVal, '', true);
 
     // HIDRATARE
     html += section('HIDRATARE');
-    html += row('Necesar de baza', hBaza+' litri/zi');
+    html += row('Necesar zilnic de baza', hBaza+' litri/zi');
     html += row('Cu activitate fizica', hActiv+' litri/zi');
-    html += row('Supliment per ora sport', '+500–750 ml');
 
     html += '</table>';
 
-    // ===== CONCLUZIE DINAMICĂ =====
+    // CONCLUZIE
     html += '<div style="margin-top:16px;padding:16px 20px;background:#f5f4f0;border-radius:8px;border-left:4px solid #1a1a1a">';
     html += '<div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em">Concluzie si recomandari</div>';
 
-    // Generare text concluzie pe baza datelor
     var imcNum = parseFloat(imc);
     var bfNum = parseFloat(bf);
     var whtrNum = parseFloat(whtr) || 0;
     var obiectivSel = document.getElementById('obiectiv').value;
-    var caloriiNum = parseFloat(caloriiVal);
-    var rmbNum = parseFloat(rmbVal);
 
-    // Paragraf 1: Profil general
     var p1 = '';
     if(imcNum < 18.5) {
-      p1 = 'Profilul nutritional indica o greutate sub limita optima (IMC ' + imc + ' — subponderal). Compozitia corporala necesita atentie pentru cresterea masei musculare si atingerea unui echilibru sanatos.';
+      p1 = 'Profilul nutritional indica o greutate sub limita optima. Compozitia corporala necesita atentie pentru cresterea masei musculare si atingerea unui echilibru sanatos.';
     } else if(imcNum < 25 && bfNum < (sexVal === 'm' ? 18 : 25)) {
       p1 = 'Profilul nutritional este optim, cu o greutate stabila si un risc metabolic redus. Compozitia corporala se incadreaza in limite sanatoase' + (bfNum < (sexVal === 'm' ? 14 : 21) ? ', cu un nivel atletic al grasimii corporale.' : ', cu potential de rafinare pentru o definire musculara mai buna.');
     } else if(imcNum < 25) {
-      p1 = 'Greutatea se incadreaza in limite normale (IMC ' + imc + '), insa procentul de grasime corporala (' + bf + ') sugereaza un potential de imbunatatire a compozitiei corporale prin recompozitie — cresterea masei musculare simultan cu reducerea tesutului adipos.';
+      p1 = 'Greutatea se incadreaza in limite normale, insa procentul de grasime corporala sugereaza un potential de imbunatatire a compozitiei corporale prin recompozitie — cresterea masei musculare simultan cu reducerea tesutului adipos.';
     } else if(imcNum < 30) {
-      p1 = 'Profilul indica supraponderalitate (IMC ' + imc + ') cu un procent de grasime corporala de ' + bf + '. Reducerea graduala a tesutului adipos este recomandata, cu accent pe protejarea masei musculare existente si evitarea deficitelor calorice agresive.';
+      p1 = 'Profilul indica supraponderalitate cu un procent de grasime corporala peste limita optima. Reducerea graduala a tesutului adipos este recomandata, cu accent pe protejarea masei musculare si evitarea deficitelor calorice agresive.';
     } else {
-      p1 = 'Profilul indica un grad de obezitate (IMC ' + imc + ') cu un procent de grasime corporala de ' + bf + '. Se recomanda o abordare progresiva si sustinuta de reducere a greutatii, sub monitorizare, cu accent pe sanatatea metabolica si nu doar pe cifra de pe cantar.';
+      p1 = 'Profilul indica necesitatea unei abordari progresive si sustinute de reducere a greutatii, sub monitorizare, cu accent pe sanatatea metabolica si nu doar pe cifra de pe cantar.';
     }
-
-    // WHtR warning
     if(whtrNum >= 0.5) {
-      p1 += ' Raportul talie/inaltime (' + whtr + ') indica un risc cardiovascular crescut — reducerea circumferintei taliei este un obiectiv prioritar.';
+      p1 += ' Raportul talie/inaltime indica un risc cardiovascular crescut — reducerea circumferintei taliei este un obiectiv prioritar.';
     }
 
-    // Paragraf 2: Recomandări pe obiectiv
     var p2 = '';
     if(obiectivSel === 'mentinere') {
-      p2 = 'Se recomanda mentinerea aportului caloric actual (' + caloriiVal + ' kcal/zi), cu un accent pe calitatea alimentelor, diversitatea surselor de proteine si introducerea sau mentinerea activitatii fizice regulate, in vederea sustinerii unei compozitii corporale optime.';
+      p2 = 'Se recomanda mentinerea aportului caloric actual, cu un accent pe calitatea alimentelor, diversitatea surselor de proteine si introducerea sau mentinerea activitatii fizice regulate, in vederea sustinerii unei compozitii corporale optime.';
     } else if(obiectivSel === 'surplus') {
-      p2 = 'Pentru obiectivul de crestere a masei musculare, surplusul caloric de +300 kcal (' + caloriiVal + ' kcal/zi) trebuie insotit obligatoriu de antrenament de rezistenta progresiv si un aport proteic adecvat calculat pe greutatea ideala. Se monitorizeaza lunar compozitia corporala pentru a evita acumularea excesiva de tesut adipos.';
+      p2 = 'Pentru obiectivul de crestere a masei musculare, surplusul caloric trebuie insotit obligatoriu de antrenament de rezistenta progresiv si un aport proteic adecvat. Se monitorizeaza lunar compozitia corporala pentru a evita acumularea excesiva de tesut adipos.';
     } else {
-      p2 = 'Deficitul caloric aplicat (' + deficitVal + ') asigura o scadere progresiva si realista. Proteinele si grasimile minime esentiale sunt protejate — deficitul provine integral din carbohidrati. Nu se coboara niciodata sub rata metabolica bazala (' + rmbVal + ' kcal/zi) pentru a proteja masa musculara, functia tiroidiana si metabolismul pe termen lung.';
+      p2 = 'Deficitul caloric aplicat asigura o scadere progresiva si realista. Proteinele si grasimile minime esentiale sunt protejate. Nu se coboara niciodata sub rata metabolica bazala pentru a proteja masa musculara, functia tiroidiana si metabolismul pe termen lung.';
     }
 
-    // Paragraf 3: Monitorizare
     var p3 = 'Monitorizarea periodica este indicata pentru ajustari fine si optimizarea rezultatelor pe termen mediu si lung. Se recomanda reevaluarea compozitiei corporale la fiecare 4–6 saptamani si ajustarea planului nutritional in functie de progresul real, starea de sanatate si feedback-ul subiectiv al clientului.';
 
     html += '<div style="font-size:11px;color:#333;line-height:1.7;margin-bottom:8px">'+p1+'</div>';
@@ -1859,24 +1852,24 @@ document.addEventListener('DOMContentLoaded', function() {
     html += '</div>';
 
     // FOOTER
-    html += '<div style="margin-top:16px;padding-top:10px;border-top:2px solid #e8e6e0;text-align:center">';
-    html += '<div style="font-size:11px;font-weight:600;color:#1a1a1a">Generat de Andrei Tataru, consultant nutritionist</div>';
-    html += '<div style="font-size:9px;color:#999;margin-top:3px">Metode de calcul: Mifflin-St. Jeor (RMB) | CUN-BAE (BF%) | Devine + Lorentz (Greutate Ideala) | WHtR (risc CV)</div>';
-    html += '<div style="font-size:9px;color:#999;margin-top:2px">100% GDPR — toate datele sunt procesate local in browser. Nicio informatie nu este transmisa sau stocata online.</div>';
+    html += '<div style="margin-top:20px;padding-top:12px;border-top:2px solid #e8e6e0;text-align:center">';
+    html += '<div style="font-size:11px;font-weight:600;color:#1a1a1a">Andrei Tataru — Consultant Nutritionist</div>';
+    html += '<div style="font-size:9px;color:#999;margin-top:4px">Acest raport a fost generat pe baza datelor introduse si nu constituie un diagnostic medical.</div>';
+    html += '<div style="font-size:9px;color:#999;margin-top:2px">Toate datele sunt procesate local — nicio informatie nu este transmisa sau stocata online.</div>';
     html += '</div>';
 
     html += '</div></body></html>';
 
-    // Deschide într-o fereastră nouă și lansează print
-    var printWin = window.open('', '_blank', 'width=800,height=900');
-    if(printWin) {
-      printWin.document.write(html);
-      printWin.document.close();
-      // Delay mic pentru randare completă
-      setTimeout(function(){ printWin.print(); }, 400);
-    } else {
-      alert('Browserul a blocat fereastra pop-up. Permite pop-up-urile pentru acest site și încearcă din nou.');
-    }
+    // ===== SALVARE DIRECTĂ CA FIȘIER HTML (se deschide apoi se poate salva ca PDF) =====
+    var blob = new Blob([html], {type: 'text/html;charset=utf-8'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'Raport_Nutritional_' + numeClient.replace(/[^a-zA-Z0-9]/g, '_') + '_' + new Date().toISOString().slice(0,10) + '.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   });
 });
 </script>
